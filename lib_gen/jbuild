@@ -1,0 +1,13 @@
+(executables
+ ((names (stubgen))
+  (flags (:standard -w -9-27))
+  (libraries (bindings_structs_lib ctypes.stubs ctypes))))
+
+(rule (with-stdout-to "generated_types.ml" (run "types/types_stubgen.exe")))
+
+(library
+    ((name wlroots_bindings)
+     (public_name wlroots.bindings)
+     (modules (generated_types bindings))
+     (flags (:standard -w -9-27))
+     (libraries (bindings_structs_lib ctypes ctypes.stubs))))

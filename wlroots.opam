@@ -1,0 +1,15 @@
+maintainer: "Armael <armael@isomorphis.me>"
+authors: "Armael <armael@isomorphis.me>"
+homepage: "https://github.com/Armael/ocaml-wlroots"
+bug-reports: "https://github.com/Armael/ocaml-wlroots/issues"
+opam-version: "1.2"
+build: [
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
+depends: [
+#  "conf-wlroots"
+  "ctypes"
+  "ctypes-foreign"
+  "jbuilder"                {build & >= "1.0+beta12"}
+]
+available: [ ocaml-version >= "4.04.1" ]

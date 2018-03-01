@@ -1,0 +1,33 @@
+(rule
+ ((targets (ffi_generated.ml))
+  (deps (../lib_gen/stubgen.exe))
+  (action (bash "${<} -ml > ffi_generated.ml"))))
+
+(rule
+ ((targets (ffi_generated_stubs.c))
+  (deps (../lib_gen/stubgen.exe))
+  (action (bash "${<} -c > ffi_generated_stubs.c"))))
+
+(library
+ ((name wlroots)
+  (public_name wlroots)
+  (modules (wlroots
+            utils sigs
+            ffi_generated))
+  (c_names (ffi_generated_stubs))
+  (c_flags ((:standard \ -Werror -pedantic -Wall -Wunused) -w
+            (:include ../lib_gen/config/wlroots-ccopt.sexp)
+            (:include ../lib_gen/config/wayland-server-ccopt.sexp)
+            (:include ../lib_gen/config/pixman-1-ccopt.sexp)))
+  (c_library_flags (:standard
+                   (:include ../lib_gen/config/wlroots-cclib.sexp)
+                   (:include ../lib_gen/config/wayland-server-cclib.sexp)
+                   (:include ../lib_gen/config/pixman-1-cclib.sexp)
+                   ))
+  (flags ((:standard -safe-string) -w -9-27-32-34))
+  (libraries (wlroots_bindings
+              ctypes.stubs
+              ctypes))
+))
+
+(jbuild_version 1)

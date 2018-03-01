@@ -1,0 +1,34 @@
+(jbuild_version 1)
+
+; bindings_structs -> stubgen
+(library
+    ((name bindings_structs_lib)
+     (public_name wlroots.bindings-structs)
+     (modules (bindings_structs))
+     (libraries (ctypes ctypes.stubs ctypes.foreign))))
+
+(executables
+ ((names (stubgen))
+  (modules (stubgen))
+  (libraries (bindings_structs_lib ctypes.stubs ctypes))))
+
+; C file built by stubgen
+(rule (with-stdout-to "types_stubgen.c" (run "./stubgen.exe")))
+
+; C executable that checks struct offsets and outputs ML file
+(rule
+ ((targets (types_stubgen.exe))
+  (deps    (./types_stubgen.c
+           ../config/wlroots-ccopt
+            ../config/wlroots-cclib
+            ../config/wayland-server-ccopt
+            ../config/wayland-server-cclib
+            ../config/pixman-1-ccopt
+            ../config/pixman-1-cclib))
+  (action (bash "\
+${CC} ${<} \
+  $(< ../config/wlroots-ccopt) $(< ../config/wlroots-cclib) \
+  $(< ../config/wayland-server-ccopt) $(< ../config/wayland-server-cclib) \
+  $(< ../config/pixman-1-ccopt) $(< ../config/pixman-1-cclib) \
+  -I `dirname ${findlib:ctypes:ctypes_cstubs_internals.h}` \
+  -I ${ocaml_where} -o ${@}"))))
