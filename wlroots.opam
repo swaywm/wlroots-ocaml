@@ -1,7 +1,7 @@
 maintainer: "Armael <armael@isomorphis.me>"
 authors: "Armael <armael@isomorphis.me>"
-homepage: "https://github.com/Armael/ocaml-wlroots"
-bug-reports: "https://github.com/Armael/ocaml-wlroots/issues"
+homepage: "https://github.com/swaywm/wlroots-ocaml"
+bug-reports: "https://github.com/swaywm/wlroots-ocaml/issues"
 opam-version: "1.2"
 build: [
   ["jbuilder" "build" "-p" name "-j" jobs]
