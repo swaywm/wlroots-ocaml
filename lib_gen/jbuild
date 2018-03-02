@@ -10,4 +10,7 @@
      (public_name wlroots.bindings)
      (modules (generated_types bindings))
      (flags (:standard -w -9-27))
-     (libraries (bindings_structs_lib ctypes ctypes.stubs))))
+     (libraries (bindings_structs_lib ctypes ctypes.stubs
+                unix-time.unix mtime.clock.os))))
+
+(jbuild_version 1)

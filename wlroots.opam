@@ -11,5 +11,7 @@ depends: [
   "ctypes"
   "ctypes-foreign"
   "jbuilder"                {build & >= "1.0+beta12"}
+  "unix-time"
+  "mtime"
 ]
 available: [ ocaml-version >= "4.04.1" ]

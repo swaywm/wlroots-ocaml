@@ -2,6 +2,8 @@ open Ctypes
 
 include Wlroots_bindings.Bindings.Utils
 
+let getfield f s = s |->> f
+
 let ptr_hash : 'a ptr -> int = fun p ->
   to_voidp p |> raw_address_of_ptr |> Hashtbl.hash
 
@@ -11,6 +13,12 @@ module Ptr = struct
   let compare = ptr_compare
   let hash = ptr_hash
   let equal = ptr_eq
+end
+
+module Poly = struct
+  let compare = compare
+  let hash = Hashtbl.hash
+  let equal = (=)
 end
 
 module O = struct

@@ -5,7 +5,8 @@
     ((name bindings_structs_lib)
      (public_name wlroots.bindings-structs)
      (modules (bindings_structs))
-     (libraries (ctypes ctypes.stubs ctypes.foreign))))
+     (libraries (ctypes ctypes.stubs ctypes.foreign
+                unix-time.unix mtime.clock.os))))
 
 (executables
  ((names (stubgen))

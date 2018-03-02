@@ -27,7 +27,8 @@
   (flags ((:standard -safe-string) -w -9-27-32-34))
   (libraries (wlroots_bindings
               ctypes.stubs
-              ctypes))
+              ctypes
+              unix-time.unix mtime.clock.os))
 ))
 
 (jbuild_version 1)

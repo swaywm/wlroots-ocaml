@@ -39,6 +39,52 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Wl_output_transform = struct
+    (* FIXME *)
+    type t = int64
+    let t : t typ = int64_t
+  end
+
+  module Renderer = struct
+    type t = [`renderer] Ctypes.structure
+    let t : t typ = structure "wlr_renderer"
+  end
+
+  module Surface_state = struct
+    type t = [`surface_state] Ctypes.structure
+    let t : t typ = structure "wlr_surface_state"
+    let width = field t "width" int
+    let height = field t "height" int
+    let transform = field t "transform" Wl_output_transform.t
+    (* TODO *)
+    let () = seal t
+  end
+
+  module Texture = struct
+    type t = [`texture] Ctypes.structure
+    let t : t typ = structure "wlr_texture"
+  end
+
+  module Surface = struct
+    type t = [`surface] Ctypes.structure
+    let t : t typ = structure "wlr_surface"
+    let current = field t "current" (ptr Surface_state.t)
+    let pending = field t "pending" (ptr Surface_state.t)
+    let texture = field t "texture" (ptr Texture.t)
+    (* TODO *)
+    let () = seal t
+  end
+
+  module Box = struct
+    type t = [`box] Ctypes.structure
+    let t : t typ = structure "wlr_box"
+    let x = field t "x" int
+    let y = field t "y" int
+    let width = field t "width" int
+    let height = field t "height" int
+    let () = seal t
+  end
+
   module Output_mode = struct
     type t = [`output_mode] Ctypes.structure
     let t : t typ = structure "wlr_output_mode"
@@ -58,14 +104,10 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let current_mode = field t "current_mode" (ptr Output_mode.t)
     let events_destroy = field t "events.destroy" Wl_signal.t
     let events_frame = field t "events.frame" Wl_signal.t
+    let transform_matrix = field t "transform_matrix" (array 16 float)
 
     (* TODO *)
     let () = seal t
-  end
-
-  module Renderer = struct
-    type t = [`renderer] Ctypes.structure
-    let t : t typ = structure "wlr_renderer"
   end
 
   module Backend = struct

@@ -16,6 +16,29 @@ struct
   open Types
   open Utils
 
+  (* time *)
+
+  let mtime_of_timespec timespec =
+    let open Time in
+    let ns = Int64.(add timespec.Timespec.sec
+                      (of_int timespec.Timespec.nsec)) in
+    Mtime.of_uint64_ns ns
+
+  let timespec_of_mtime mtime =
+    let ns_in_sec = 1_000_000_000L in
+    let ns = Mtime.to_uint64_ns mtime in
+    let sec = Int64.div ns ns_in_sec in
+    let nsec = Int64.rem ns ns_in_sec |> Int64.to_int in
+    Time.Timespec.{ sec; nsec }
+
+  let time : Mtime.t typ =
+    view
+      ~read:(fun timespec_p -> mtime_of_timespec (!@ timespec_p))
+      ~write:(fun mtime ->
+        let timespec = timespec_of_mtime mtime in
+        allocate Time_unix.Timespec.t timespec)
+      (ptr Time_unix.Timespec.t)
+
   (* wl_list *)
 
   type wl_list_p = Wl_list.t ptr
@@ -110,6 +133,35 @@ struct
   let wlr_output_create_global = foreign "wlr_output_create_global"
       (wlr_output_p @-> returning void)
 
+  (* wlr_box *)
+
+  let wlr_box_p = ptr Box.t
+
+  (* wlr_matrix *)
+
+  let wlr_matrix_p = ptr float
+
+  let wlr_matrix_project_box = foreign "wlr_matrix_project_box"
+      (wlr_matrix_p @-> wlr_box_p @-> Wl_output_transform.t @-> float @->
+       wlr_matrix_p @-> returning void)
+
+  (* wlr_texture *)
+
+  let wlr_texture_p = ptr Texture.t
+
+  (* wlr_surface *)
+
+  let wlr_surface_p = ptr Surface.t
+
+  let wlr_surface_from_resource = foreign "wlr_surface_from_resource"
+      (wl_resource_p @-> returning wlr_surface_p)
+
+  let wlr_surface_has_buffer = foreign "wlr_surface_has_buffer"
+      (wlr_surface_p @-> returning bool)
+
+  let wlr_surface_send_frame_done = foreign "wlr_surface_send_frame_done"
+      (wlr_surface_p @-> time @-> returning void)
+
   (* wlr_renderer *)
 
   let wlr_renderer_p = ptr Renderer.t
@@ -122,6 +174,10 @@ struct
 
   let wlr_renderer_clear = foreign "wlr_renderer_clear"
       (wlr_renderer_p @-> ptr float @-> returning void)
+
+  let wlr_render_with_matrix = foreign "wlr_render_with_matrix"
+      (wlr_renderer_p @-> wlr_texture_p @-> wlr_matrix_p @-> float @->
+       returning bool)
 
   (* wlr_backend *)
 

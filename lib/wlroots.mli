@@ -50,6 +50,48 @@ module Wl : sig
     type t
     include Comparable0 with type t := t
   end
+
+  module Output_transform : sig
+    type t
+    include Comparable0 with type t := t
+  end
+end
+
+module Texture : sig
+  type t
+  include Comparable0 with type t := t
+end
+
+module Surface : sig
+  type t
+  include Comparable0 with type t := t
+
+  val from_resource : Wl.Resource.t -> t
+  val has_buffer : t -> bool
+
+  module State : sig
+    type t
+    include Comparable0 with type t := t
+    val width : t -> int
+    val height : t -> int
+    val transform : t -> Wl.Output_transform.t
+  end
+
+  val current : t -> State.t
+  val pending : t -> State.t
+  val texture : t -> Texture.t
+  val send_frame_done : t -> Mtime.t -> unit
+end
+
+module Box : sig
+  type t = { x : int; y : int; width : int; height : int }
+  include Comparable0 with type t := t
+end
+
+module Matrix : sig
+  type t
+  include Comparable0 with type t := t
+  val project_box : Box.t -> Wl.Output_transform.t -> rotation:float -> t -> t
 end
 
 module Output : sig
@@ -67,6 +109,7 @@ module Output : sig
   end
 
   val modes : t -> Mode.t list
+  val transform_matrix : t -> Matrix.t
   val set_mode : t -> Mode.t -> bool
   val make_current : t -> bool
   val swap_buffers : t -> bool
@@ -85,6 +128,8 @@ module Renderer : sig
   val begin_ : t -> Output.t -> unit
   val end_ : t -> unit
   val clear : t -> float * float * float * float -> unit
+
+  val render_with_matrix : t -> Texture.t -> Matrix.t -> alpha:float -> bool
 end
 
 module Backend : sig

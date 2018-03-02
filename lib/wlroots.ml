@@ -92,6 +92,71 @@ module Wl = struct
     type t = Types.Wl_resource.t ptr
     include Ptr
   end
+
+  module Output_transform = struct
+    type t = Types.Wl_output_transform.t
+    include Poly
+  end
+end
+
+module Texture = struct
+  type t = Types.Texture.t ptr
+  include Ptr
+end
+
+module Surface = struct
+  type t = Types.Surface.t ptr
+  include Ptr
+
+  let from_resource = Bindings.wlr_surface_from_resource
+  let has_buffer = Bindings.wlr_surface_has_buffer
+
+  module State = struct
+    type t = Types.Surface_state.t ptr
+    include Ptr
+
+    let width = getfield Types.Surface_state.width
+    let height = getfield Types.Surface_state.height
+    let transform = getfield Types.Surface_state.transform
+  end
+
+  let current = getfield Types.Surface.current
+  let pending = getfield Types.Surface.pending
+  let texture = getfield Types.Surface.texture
+
+  let send_frame_done = Bindings.wlr_surface_send_frame_done
+end
+
+module Box = struct
+  type t = { x : int; y : int; width : int; height : int }
+  include Poly
+
+  let of_c (c_box : Types.Box.t ptr) =
+    { x = c_box |->> Types.Box.x;
+      y = c_box |->> Types.Box.y;
+      width = c_box |->> Types.Box.width;
+      height = c_box |->> Types.Box.height; }
+
+  let to_c { x; y; width; height } : Types.Box.t ptr =
+    let c_box = make Types.Box.t in
+    setf c_box Types.Box.x x;
+    setf c_box Types.Box.y y;
+    setf c_box Types.Box.width width;
+    setf c_box Types.Box.height height;
+    addr c_box
+end
+
+module Matrix = struct
+  type t = float ptr
+  include Ptr
+
+  let project_box box transform ~rotation projection =
+    let mat = CArray.make float 16 in
+    let mat_p = CArray.start mat in
+    Bindings.wlr_matrix_project_box
+      mat_p (Box.to_c box) transform rotation
+      projection;
+    mat_p
 end
 
 module Output = struct
@@ -103,15 +168,18 @@ module Output = struct
     type t = Types.Output_mode.t ptr
     include Ptr
 
-    let flags mode = mode |->> Types.Output_mode.flags
-    let width mode = mode |->> Types.Output_mode.width
-    let height mode = mode |->> Types.Output_mode.height
-    let refresh mode = mode |->> Types.Output_mode.refresh
+    let flags = getfield Types.Output_mode.flags
+    let width = getfield Types.Output_mode.width
+    let height = getfield Types.Output_mode.height
+    let refresh = getfield Types.Output_mode.refresh
   end
 
   let modes (output : t) : Mode.t list =
     (output |-> Types.Output.modes)
     |> Bindings.ocaml_of_wl_list Bindings.wlr_output_mode_of_link
+
+  let transform_matrix (output : t) : Matrix.t =
+    CArray.start (output |->> Types.Output.transform_matrix)
 
   let set_mode (output : t) (mode : Mode.t) =
     Bindings.wlr_output_set_mode output mode
@@ -153,6 +221,9 @@ module Renderer = struct
   let clear (renderer : t) ((c1,c2,c3,c4) : float * float * float * float) =
     let color_arr = CArray.of_list float [c1;c2;c3;c4] in
     Bindings.wlr_renderer_clear renderer (CArray.start color_arr)
+
+  let render_with_matrix renderer texture mat ~alpha =
+    Bindings.wlr_render_with_matrix renderer texture mat alpha
 end
 
 module Backend = struct
