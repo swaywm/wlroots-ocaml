@@ -17,7 +17,10 @@ module Wl = struct
       (* Tie the lifetime of the OCaml callback function to the lifetime of the C
          structure, to prevent untimely memory collection *)
       notify : 'a -> unit;
+      mutable full_notify : Types.Wl_listener.t ptr -> unit ptr -> unit;
     }
+
+    let full_notify_dummy _ _ = assert false
 
     type 'a t = 'a listener O.t
 
@@ -29,8 +32,9 @@ module Wl = struct
       let c_struct = make Types.Wl_listener.t in
       (* we do not set the [notify] field of the C structure yet. It will be done
          by [Signal.add], which will provide the coercion function from [void*] to
-         ['a], computed from the [typ] field of the signal. *)
-      O.create { c = addr c_struct; notify }
+         ['a], computed from the [typ] field of the signal, and compose it with [notify]
+         to obtain [full_notify]. *)
+      O.create { c = addr c_struct; notify; full_notify = full_notify_dummy }
 
     let state (listener : 'a t) : [`attached | `detached] =
       match O.state listener with
@@ -42,6 +46,9 @@ module Wl = struct
       | `owned -> ()
       | `transfered_to_c ->
         let raw_listener = O.reclaim_ownership listener in
+        (* Throw away [full_notify] which was [notify] (which we keep) + a closure
+           specific to the signal, which can now be garbage collected. *)
+        raw_listener.full_notify <- full_notify_dummy;
         (* Detach the listener from its signal, as advised in the documentation of
            [wl_listener]. *)
         Bindings.wl_list_remove (raw_listener.c |-> Types.Wl_listener.link)
@@ -60,8 +67,11 @@ module Wl = struct
     let add (signal : 'a t) (listener : 'a Listener.t) =
       match listener with
       | O.{ box = Owned raw_listener } ->
-        setf (!@ (raw_listener.c)) Types.Wl_listener.notify
-          (fun _ data -> raw_listener.notify (coerce (ptr void) signal.typ data));
+        let full_notify _ data =
+          raw_listener.notify (coerce (ptr void) signal.typ data)
+        in
+        raw_listener.full_notify <- full_notify;
+        setf (!@ (raw_listener.c)) Types.Wl_listener.notify full_notify;
         Bindings.wl_signal_add signal.c raw_listener.c;
         O.transfer_ownership_to_c listener
       | O.{ box = Transfered_to_C _ } ->
