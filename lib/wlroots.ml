@@ -4,6 +4,8 @@ open Utils
 module Bindings = Wlroots_bindings.Bindings.Make (Ffi_generated)
 module Types = Wlroots_bindings.Bindings.Types
 
+module Sigs = Sigs
+
 module Wl = struct
 
   module Event_loop = struct

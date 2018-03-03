@@ -1,3 +1,5 @@
+module Sigs : module type of Sigs
+
 open Sigs
 
 module Wl : sig
