@@ -1,26 +1,28 @@
 (jbuild_version 1)
 
-; bindings_structs -> stubgen
+; Functors containing the bindings
 (library
-    ((name bindings_structs_lib)
-     (public_name wlroots.bindings-structs)
-     (modules (bindings_structs))
-     (libraries (ctypes ctypes.stubs ctypes.foreign
-                unix-time.unix mtime.clock.os))))
+ ((name wlroots_types_f)
+  (public_name wlroots.types_f)
+  (modules (types))
+  (libraries (ctypes ctypes.stubs ctypes.foreign
+              unix-time.unix mtime.clock.os))))
 
+; Stubgen, phase 1
 (executables
  ((names (stubgen))
   (modules (stubgen))
-  (libraries (bindings_structs_lib ctypes.stubs ctypes))))
+  (libraries (wlroots_types_f ctypes.stubs ctypes))))
 
 ; C file built by stubgen
 (rule (with-stdout-to "types_stubgen.c" (run "./stubgen.exe")))
 
+; Stubgen, phase 2
 ; C executable that checks struct offsets and outputs ML file
 (rule
  ((targets (types_stubgen.exe))
   (deps    (./types_stubgen.c
-           ../config/wlroots-ccopt
+            ../config/wlroots-ccopt
             ../config/wlroots-cclib
             ../config/wayland-server-ccopt
             ../config/wayland-server-cclib

@@ -13,7 +13,6 @@ let prologue = "
 #include <wlr/types/wlr_screenshooter.h>
 #include <wlr/types/wlr_xdg_shell_v6.h>
 #include <wlr/util/log.h>
-#include \"macros.h\"
 "
 
 let () =
@@ -29,7 +28,7 @@ let () =
   | true, true ->
     failwith "Exactly one of -ml and -c must be specified"
   | true, false ->
-    Cstubs.write_ml Format.std_formatter ~prefix (module Bindings.Make)
+    Cstubs.write_ml Format.std_formatter ~prefix (module Wlroots_ffi_f.Ffi.Make)
   | false, true ->
     print_endline prologue;
-    Cstubs.write_c Format.std_formatter ~prefix (module Bindings.Make)
+    Cstubs.write_c Format.std_formatter ~prefix (module Wlroots_ffi_f.Ffi.Make)

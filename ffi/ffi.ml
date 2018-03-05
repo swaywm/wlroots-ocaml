@@ -1,20 +1,12 @@
 open Ctypes
+open Wlroots_common.Utils
 
-module Types = Bindings_structs_lib.Bindings_structs.Make (Generated_types)
-
-(* TODO: move *)
-module Utils = struct
-  let ptr_eq p q = Ctypes.ptr_compare p q = 0
-
-  let ( |->> ) s f = !@ (s |-> f)
-end
+module Types = Wlroots_types_f.Types.Make (Generated_types)
 
 module Make (F : Cstubs.FOREIGN) =
 struct
-  open Ctypes
   open F
   open Types
-  open Utils
 
   (* time *)
 
@@ -106,15 +98,9 @@ struct
 
   let wl_resource_p = ptr Wl_resource.t
 
-  let wl_resource_of_link = foreign "wl_resource_of_link"
-      (wl_list_p @-> returning wl_resource_p)
-
   (* wlr_output_mode *)
 
   let wlr_output_mode_p = ptr Output_mode.t
-
-  let wlr_output_mode_of_link = foreign "wlr_output_mode_of_link"
-      (wl_list_p @-> returning wlr_output_mode_p)
 
   (* wlr_output *)
 

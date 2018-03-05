@@ -1,0 +1,18 @@
+(jbuild_version 1)
+
+(library
+ ((name wlroots_ffi_f)
+  (public_name wlroots.ffi_f)
+  (modules (generated_types ffi))
+  (flags (:standard -w -9-27))
+  (libraries (wlroots_types_f
+              wlroots_common
+              ctypes ctypes.stubs
+              unix-time.unix mtime.clock.os))))
+
+(executables
+ ((names (stubgen))
+  (flags (:standard -w -9-27))
+  (libraries (wlroots_ffi_f ctypes.stubs ctypes))))
+
+(rule (with-stdout-to "generated_types.ml" (run "../types/types_stubgen.exe")))

@@ -1,10 +1,8 @@
 open Ctypes
-open Utils
+open Wlroots_common.Utils
 
-module Bindings = Wlroots_bindings.Bindings.Make (Ffi_generated)
-module Types = Wlroots_bindings.Bindings.Types
-
-module Sigs = Sigs
+module Bindings = Wlroots_ffi_f.Ffi.Make (Generated_ffi)
+module Types = Wlroots_ffi_f.Ffi.Types
 
 module Wl = struct
 
@@ -188,7 +186,8 @@ module Output = struct
 
   let modes (output : t) : Mode.t list =
     (output |-> Types.Output.modes)
-    |> Bindings.ocaml_of_wl_list Bindings.wlr_output_mode_of_link
+    |> Bindings.ocaml_of_wl_list
+      (container_of Types.Output_mode.t Types.Output_mode.link)
 
   let transform_matrix (output : t) : Matrix.t =
     CArray.start (output |->> Types.Output.transform_matrix)
@@ -267,7 +266,8 @@ module Compositor = struct
   let destroy = Bindings.wlr_compositor_destroy
   let surfaces comp =
     (comp |-> Types.Compositor.surfaces)
-    |> Bindings.ocaml_of_wl_list Bindings.wl_resource_of_link
+    |> Bindings.ocaml_of_wl_list
+      (container_of Types.Wl_resource.t Types.Wl_resource.link)
 end
 
 module Xdg_shell_v6 = struct

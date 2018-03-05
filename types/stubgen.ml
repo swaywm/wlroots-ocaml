@@ -16,4 +16,4 @@ let prologue = "
 let () =
   print_endline prologue;
   Cstubs_structs.write_c Format.std_formatter
-    (module Bindings_structs_lib.Bindings_structs.Make)
+    (module Wlroots_types_f.Types.Make)

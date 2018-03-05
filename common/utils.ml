@@ -1,8 +1,13 @@
 open Ctypes
 
-include Wlroots_bindings.Bindings.Utils
-
+let ( |->> ) s f = !@ (s |-> f)
 let getfield f s = s |->> f
+
+let container_of s field p =
+  let p = coerce (ptr (reference_type p)) (ptr char) p in
+  coerce (ptr char) (ptr s) (p -@ offsetof field)
+
+let ptr_eq p q = ptr_compare p q = 0
 
 let ptr_hash : 'a ptr -> int = fun p ->
   to_voidp p |> raw_address_of_ptr |> Hashtbl.hash

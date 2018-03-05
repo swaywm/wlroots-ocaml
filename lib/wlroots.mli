@@ -1,6 +1,4 @@
-module Sigs : module type of Sigs
-
-open Sigs
+open Wlroots_common.Sigs
 
 module Wl : sig
   module Listener : sig
