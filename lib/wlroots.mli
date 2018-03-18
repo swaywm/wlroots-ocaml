@@ -132,26 +132,21 @@ module Renderer : sig
   val render_with_matrix : t -> Texture.t -> Matrix.t -> alpha:float -> bool
 end
 
-module Backend : sig
+module Compositor : sig
   type t
-  include Comparable0 with type t := t
 
-  val autocreate : Wl.Display.t -> t
-  val start : t -> bool
-  val get_renderer : t -> Renderer.t
+  val create : unit -> t
+  val run : t -> unit
+  val terminate : t -> unit
+
+  val display : t -> Wl.Display.t
+  val event_loop : t -> Wl.Event_loop.t
+  val renderer : t -> Renderer.t
+  val surfaces : t -> Wl.Resource.t list
 
   module Events : sig
     val new_output : t -> Output.t Wl.Signal.t
   end
-end
-
-module Compositor : sig
-  type t
-  include Comparable0 with type t := t
-
-  val create : Wl.Display.t -> Renderer.t -> t
-  val destroy : t -> unit
-  val surfaces : t -> Wl.Resource.t list
 end
 
 module Xdg_shell_v6 : sig

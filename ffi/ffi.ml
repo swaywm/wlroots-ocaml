@@ -178,6 +178,9 @@ struct
   let wlr_backend_start = foreign "wlr_backend_start"
       (wlr_backend_p @-> returning bool)
 
+  let wlr_backend_destroy = foreign "wlr_backend_destroy"
+      (wlr_backend_p @-> returning void)
+
   (* wlr_compositor *)
 
   let wlr_compositor_p = ptr Compositor.t

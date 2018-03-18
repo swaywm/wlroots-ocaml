@@ -243,10 +243,11 @@ module Backend = struct
 
   let autocreate dpy =
     let b = Bindings.wlr_backend_autocreate dpy in
-    if is_null b then failwith "Backend.autocreate";
+    if is_null b then failwith "Failed to create backend";
     b
 
   let start = Bindings.wlr_backend_start
+  let destroy = Bindings.wlr_backend_destroy
 
   let get_renderer = Bindings.wlr_backend_get_renderer
 
@@ -259,13 +260,48 @@ module Backend = struct
 end
 
 module Compositor = struct
-  type t = Types.Compositor.t ptr
-  include Ptr
+  type t = {
+    compositor : Types.Compositor.t ptr;
+    backend : Backend.t;
+    display : Wl.Display.t;
+    event_loop : Wl.Event_loop.t;
+    renderer : Renderer.t;
+    socket : string;
+    shm_fd : int;
+  }
 
-  let create = Bindings.wlr_compositor_create
-  let destroy = Bindings.wlr_compositor_destroy
+  let create () =
+    let display = Wl.Display.create () in
+    let event_loop = Wl.Display.get_event_loop display in
+    let backend = Backend.autocreate display in
+    let shm_fd = Wl.Display.init_shm display in
+    let renderer = Backend.get_renderer backend in (* ? *)
+    let socket = Wl.Display.add_socket_auto display in
+    let compositor = Bindings.wlr_compositor_create display renderer in
+    { compositor; backend; display; event_loop; renderer; socket; shm_fd }
+
+  let run c =
+    if not (Backend.start c.backend) then (
+      Backend.destroy c.backend;
+      failwith "Failed to start backend"
+    );
+    Unix.putenv "WAYLAND_DISPLAY" c.socket;
+    Wl.Display.run c.display
+
+  let terminate c =
+    Bindings.wlr_compositor_destroy c.compositor; (* ? *)
+    Wl.Display.destroy c.display
+
+  let display c = c.display
+  let event_loop c = c.event_loop
+  let renderer c = c.renderer
+
+  module Events = struct
+    let new_output c = Backend.Events.new_output c.backend
+  end
+
   let surfaces comp =
-    (comp |-> Types.Compositor.surfaces)
+    (comp.compositor |-> Types.Compositor.surfaces)
     |> Bindings.ocaml_of_wl_list
       (container_of Types.Wl_resource.t Types.Wl_resource.link)
 end
