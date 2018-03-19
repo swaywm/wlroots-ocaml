@@ -98,6 +98,14 @@ module Output : sig
   type t
   include Comparable0 with type t := t
 
+  type handler =
+      Handler :
+        < frame : t -> unit;
+          .. >
+      -> handler
+
+  val handler_default : handler
+
   module Mode : sig
     type t
     include Comparable0 with type t := t
@@ -114,11 +122,6 @@ module Output : sig
   val make_current : t -> bool
   val swap_buffers : t -> bool
   val create_global : t -> unit
-
-  module Events : sig
-    val destroy : t -> t Wl.Signal.t
-    val frame : t -> t Wl.Signal.t
-  end
 end
 
 module Renderer : sig
@@ -135,7 +138,16 @@ end
 module Compositor : sig
   type t
 
-  val create : unit -> t
+  type outputs_handler =
+      Outputs_handler :
+        < output_added : t -> Output.t -> Output.handler;
+          output_destroyed : t -> Output.t -> unit;
+          .. >
+      -> outputs_handler
+
+  val outputs_handler_default : outputs_handler
+
+  val create : ?outputs_handler:outputs_handler -> unit -> t
   val run : t -> unit
   val terminate : t -> unit
 
@@ -143,10 +155,6 @@ module Compositor : sig
   val event_loop : t -> Wl.Event_loop.t
   val renderer : t -> Renderer.t
   val surfaces : t -> Wl.Resource.t list
-
-  module Events : sig
-    val new_output : t -> Output.t Wl.Signal.t
-  end
 end
 
 module Xdg_shell_v6 : sig

@@ -174,6 +174,22 @@ module Output = struct
   let t = ptr Types.Output.t
   include Ptr
 
+  type handler =
+      Handler :
+        < frame : t -> unit;
+          .. >
+      -> handler
+
+  let handler_default = Handler (object
+      method frame _ = ()
+    end)
+
+  type manager = {
+    output : t;
+    handler : handler;
+    frame : unit Wl.Listener.t;
+  }
+
   module Mode = struct
     type t = Types.Output_mode.t ptr
     include Ptr
@@ -206,17 +222,26 @@ module Output = struct
   let create_global (output : t) =
     Bindings.wlr_output_create_global output
 
-  module Events = struct
-    let destroy (output : t) : t Wl.Signal.t = {
-      c = output |-> Types.Output.events_destroy;
-      typ = t;
-    }
+  let event_destroy (output : t) : unit Wl.Signal.t = {
+    c = output |-> Types.Output.events_destroy;
+    typ = void; (* [t] would also work *)
+  }
 
-    let frame (output : t) : t Wl.Signal.t = {
-      c = output |-> Types.Output.events_frame;
-      typ = t;
-    }
-  end
+  let event_frame (output : t) : unit Wl.Signal.t = {
+    c = output |-> Types.Output.events_frame;
+    typ = void; (* [t] would also work *)
+  }
+
+  let create_manager (output: t) (handler: handler): manager =
+    let frame = Wl.Listener.create (fun () ->
+      let Handler h = handler in
+      h#frame output)
+    in
+    Wl.Signal.add (event_frame output) frame;
+    { output; handler; frame }
+
+  let destroy_manager (manager: manager) =
+    Wl.Listener.detach manager.frame
 end
 
 module Renderer = struct
@@ -260,7 +285,22 @@ module Backend = struct
 end
 
 module Compositor = struct
-  type t = {
+
+  type outputs_handler =
+      Outputs_handler :
+        < output_added : t -> Output.t -> Output.handler;
+          output_destroyed : t -> Output.t -> unit;
+          .. >
+      -> outputs_handler
+
+  and outputs_manager = {
+    mutable outputs : (Output.t * Output.manager * unit Wl.Listener.t) list;
+    handler : outputs_handler;
+    mutable output_added : Output.t Wl.Listener.t;
+  }
+
+  and t = {
+    mutable outputs_manager : outputs_manager;
     compositor : Types.Compositor.t ptr;
     backend : Backend.t;
     display : Wl.Display.t;
@@ -270,7 +310,50 @@ module Compositor = struct
     shm_fd : int;
   }
 
-  let create () =
+  let outputs_handler_default : outputs_handler =
+    Outputs_handler (object
+      method output_added _ _ = Output.handler_default
+      method output_destroyed _ _ = ()
+    end)
+
+  let event_new_output c = Backend.Events.new_output c.backend
+
+  let create_outputs_manager comp handler =
+    let rec manager = {
+      outputs = [];
+      handler;
+      output_added = Wl.Listener.create (fun _ -> assert false);
+    } in
+    let output_added = Wl.Listener.create (fun output ->
+      let Outputs_handler h = handler in
+      let output_handler = h#output_added comp output in
+      let destroy_listener = Wl.Listener.create (fun () ->
+        h#output_destroyed comp output;
+        manager.outputs <- List.filter (fun (output', manager, listener) ->
+          if Output.equal output output' then (
+            Output.destroy_manager manager;
+            Wl.Listener.detach listener;
+            true
+          ) else false
+        ) manager.outputs
+      ) in
+      Wl.Signal.add (Output.event_destroy output) destroy_listener;
+      let output_manager = Output.create_manager output output_handler in
+      manager.outputs <- (output, output_manager, destroy_listener) ::
+                         manager.outputs
+    ) in
+    manager.output_added <- output_added;
+    Wl.Signal.add (event_new_output comp) output_added;
+    manager
+
+  let destroy_outputs_manager (manager: outputs_manager) =
+    List.iter (fun (_, manager, listener) ->
+      Output.destroy_manager manager;
+      Wl.Listener.detach listener
+    ) manager.outputs;
+    Wl.Listener.detach manager.output_added
+
+  let create ?(outputs_handler = outputs_handler_default) () =
     let display = Wl.Display.create () in
     let event_loop = Wl.Display.get_event_loop display in
     let backend = Backend.autocreate display in
@@ -278,7 +361,17 @@ module Compositor = struct
     let renderer = Backend.get_renderer backend in (* ? *)
     let socket = Wl.Display.add_socket_auto display in
     let compositor = Bindings.wlr_compositor_create display renderer in
-    { compositor; backend; display; event_loop; renderer; socket; shm_fd }
+    (* Somehow required to tie the recursive knot. *)
+    let dummy_manager = {
+      outputs = []; handler = outputs_handler_default;
+      output_added = Wl.Listener.create (fun _ -> assert false)
+    } in
+    let comp =
+      { outputs_manager = dummy_manager;
+        compositor; backend; display; event_loop; renderer; socket; shm_fd }
+    in
+    comp.outputs_manager <- create_outputs_manager comp outputs_handler;
+    comp
 
   let run c =
     if not (Backend.start c.backend) then (
@@ -289,16 +382,13 @@ module Compositor = struct
     Wl.Display.run c.display
 
   let terminate c =
+    destroy_outputs_manager c.outputs_manager;
     Bindings.wlr_compositor_destroy c.compositor; (* ? *)
     Wl.Display.destroy c.display
 
   let display c = c.display
   let event_loop c = c.event_loop
   let renderer c = c.renderer
-
-  module Events = struct
-    let new_output c = Backend.Events.new_output c.backend
-  end
 
   let surfaces comp =
     (comp.compositor |-> Types.Compositor.surfaces)
