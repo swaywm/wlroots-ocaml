@@ -259,53 +259,6 @@ module Backend = struct
   end
 end
 
-module Compositor = struct
-  type t = {
-    compositor : Types.Compositor.t ptr;
-    backend : Backend.t;
-    display : Wl.Display.t;
-    event_loop : Wl.Event_loop.t;
-    renderer : Renderer.t;
-    socket : string;
-    shm_fd : int;
-  }
-
-  let create () =
-    let display = Wl.Display.create () in
-    let event_loop = Wl.Display.get_event_loop display in
-    let backend = Backend.autocreate display in
-    let shm_fd = Wl.Display.init_shm display in
-    let renderer = Backend.get_renderer backend in (* ? *)
-    let socket = Wl.Display.add_socket_auto display in
-    let compositor = Bindings.wlr_compositor_create display renderer in
-    { compositor; backend; display; event_loop; renderer; socket; shm_fd }
-
-  let run c =
-    if not (Backend.start c.backend) then (
-      Backend.destroy c.backend;
-      failwith "Failed to start backend"
-    );
-    Unix.putenv "WAYLAND_DISPLAY" c.socket;
-    Wl.Display.run c.display
-
-  let terminate c =
-    Bindings.wlr_compositor_destroy c.compositor; (* ? *)
-    Wl.Display.destroy c.display
-
-  let display c = c.display
-  let event_loop c = c.event_loop
-  let renderer c = c.renderer
-
-  module Events = struct
-    let new_output c = Backend.Events.new_output c.backend
-  end
-
-  let surfaces comp =
-    (comp.compositor |-> Types.Compositor.surfaces)
-    |> Bindings.ocaml_of_wl_list
-      (container_of Types.Wl_resource.t Types.Wl_resource.link)
-end
-
 module Xdg_shell_v6 = struct
   type t = Types.Xdg_shell_v6.t ptr
   include Ptr
@@ -359,4 +312,74 @@ module Log = struct
   (* TODO: callback *)
   let init importance =
     Bindings.wlr_log_init importance null
+end
+
+module Compositor = struct
+  type t = {
+    compositor : Types.Compositor.t ptr;
+    backend : Backend.t;
+    display : Wl.Display.t;
+    event_loop : Wl.Event_loop.t;
+    renderer : Renderer.t;
+    socket : string;
+    shm_fd : int;
+    mutable screenshooter : Screenshooter.t option;
+    mutable idle : Idle.t option;
+    mutable xdg_shell_v6 : Xdg_shell_v6.t option;
+    mutable primary_selection : Primary_selection.Device_manager.t option;
+    mutable gamma_control : Gamma_control.Manager.t option;
+  }
+
+  let create
+      ?(screenshooter = true)
+      ?(idle = true)
+      ?(xdg_shell_v6 = true)
+      ?(primary_selection = true)
+      ?(gamma_control = true)
+      ()
+    =
+    (* simple helper for the boolean flags *)
+    let flag b f x = if b then Some (f x) else None in
+    let display = Wl.Display.create () in
+    let event_loop = Wl.Display.get_event_loop display in
+    let backend = Backend.autocreate display in
+    let shm_fd = Wl.Display.init_shm display in
+    let renderer = Backend.get_renderer backend in (* ? *)
+    let socket = Wl.Display.add_socket_auto display in
+    let compositor = Bindings.wlr_compositor_create display renderer in
+    let screenshooter = flag screenshooter Screenshooter.create display in
+    let idle = flag idle Idle.create display in
+    let xdg_shell_v6 = flag xdg_shell_v6 Xdg_shell_v6.create display in
+    let primary_selection =
+      flag primary_selection Primary_selection.Device_manager.create display in
+    let gamma_control =
+      flag gamma_control Gamma_control.Manager.create display in
+
+    { compositor; backend; display; event_loop; renderer; socket; shm_fd;
+      screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control; }
+
+  let run c =
+    if not (Backend.start c.backend) then (
+      Backend.destroy c.backend;
+      failwith "Failed to start backend"
+    );
+    Unix.putenv "WAYLAND_DISPLAY" c.socket;
+    Wl.Display.run c.display
+
+  let terminate c =
+    Bindings.wlr_compositor_destroy c.compositor; (* ? *)
+    Wl.Display.destroy c.display
+
+  let display c = c.display
+  let event_loop c = c.event_loop
+  let renderer c = c.renderer
+
+  module Events = struct
+    let new_output c = Backend.Events.new_output c.backend
+  end
+
+  let surfaces comp =
+    (comp.compositor |-> Types.Compositor.surfaces)
+    |> Bindings.ocaml_of_wl_list
+      (container_of Types.Wl_resource.t Types.Wl_resource.link)
 end

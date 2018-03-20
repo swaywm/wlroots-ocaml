@@ -135,7 +135,14 @@ end
 module Compositor : sig
   type t
 
-  val create : unit -> t
+  val create :
+    ?screenshooter:bool ->
+    ?idle:bool ->
+    ?xdg_shell_v6:bool ->
+    ?primary_selection:bool ->
+    ?gamma_control:bool ->
+    unit ->
+    t
   val run : t -> unit
   val terminate : t -> unit
 
