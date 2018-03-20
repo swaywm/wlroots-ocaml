@@ -116,9 +116,13 @@ module Output : sig
     val refresh : t -> int32 (* mHz *)
   end
 
+  (* Setting an output mode *)
   val modes : t -> Mode.t list
-  val transform_matrix : t -> Matrix.t
   val set_mode : t -> Mode.t -> bool
+  val best_mode : t -> Mode.t option
+  val set_best_mode : t -> unit
+
+  val transform_matrix : t -> Matrix.t
   val make_current : t -> bool
   val swap_buffers : t -> bool
   val create_global : t -> unit
