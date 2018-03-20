@@ -109,6 +109,16 @@ module Wl = struct
   end
 end
 
+module Log = struct
+  include Types.Log
+
+  (* TODO: callback *)
+  let init importance =
+    Bindings.wlr_log_init importance null
+
+  (* TODO logging functions *)
+end
+
 module Texture = struct
   type t = Types.Texture.t ptr
   include Ptr
@@ -192,8 +202,20 @@ module Output = struct
   let transform_matrix (output : t) : Matrix.t =
     CArray.start (output |->> Types.Output.transform_matrix)
 
-  let set_mode (output : t) (mode : Mode.t) =
+  let set_mode (output : t) (mode : Mode.t): bool =
     Bindings.wlr_output_set_mode output mode
+
+  let best_mode (output : t): Mode.t option =
+    match modes output with
+    | [] -> None
+    | mode :: _ -> Some mode
+
+  let set_best_mode (output : t) =
+    match best_mode output with
+    | None -> ()
+    | Some mode ->
+      (* TODO log the mode set *)
+      set_mode output mode |> ignore
 
   let make_current (output : t) : bool =
     (* TODO: handle buffer age *)
@@ -304,14 +326,6 @@ module Idle = struct
 
   let create = Bindings.wlr_idle_create
   let destroy = Bindings.wlr_idle_destroy
-end
-
-module Log = struct
-  include Types.Log
-
-  (* TODO: callback *)
-  let init importance =
-    Bindings.wlr_log_init importance null
 end
 
 module Compositor = struct
