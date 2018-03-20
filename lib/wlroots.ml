@@ -12,6 +12,18 @@ module Wl = struct
   end
 
   module Listener = struct
+    (* Resources associated to a ['a Listener.t] (subscription to events
+       broadcasted by a ['a Signal.t]) are manually managed.
+
+       Attaching a listener to a signal using [Signal.add] registers the listener
+       and gives its ownership to the C code. After attaching it, dropping the
+       handle on a listener will not free the listener and its associated
+       resources: one needs to explicitly call [detach] first (which un-registers
+       it from the signal).
+
+       NB: Detaching a listener then re-attaching it to the same or a different
+       signal is possible -- detaching a listener does not necessarily means
+       destroying it *)
     type 'a listener = {
       c : Types.Wl_listener.t ptr;
       (* Tie the lifetime of the OCaml callback function to the lifetime of the C

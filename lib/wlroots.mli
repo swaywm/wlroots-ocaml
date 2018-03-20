@@ -1,34 +1,6 @@
 open Wlroots_common.Sigs
 
 module Wl : sig
-  module Listener : sig
-    (* Resources associated to a ['a Listener.t] (subscription to events
-       broadcasted by a ['a Signal.t]) are manually managed.
-
-       Attaching a listener to a signal using [Signal.add] registers the listener
-       and gives its ownership to the C code. After attaching it, dropping the
-       handle on a listener will not free the listener and its associated
-       resources: one needs to explicitly call [detach] first (which un-registers
-       it from the signal).
-
-       NB: Detaching a listener then re-attaching it to the same or a different
-       signal is possible -- detaching a listener does not necessarily means
-       destroying it *)
-    type 'a t
-    include Comparable1 with type 'a t := 'a t
-
-    val create : ('a -> unit) -> 'a t
-    val state : 'a t -> [`attached | `detached]
-    val detach : 'a t -> unit
-  end
-
-  module Signal : sig
-    type 'a t
-    include Comparable1 with type 'a t := 'a t
-
-    val add : 'a t -> 'a Listener.t -> unit
-  end
-
   module Event_loop : sig
     type t
     include Comparable0 with type t := t
