@@ -284,118 +284,6 @@ module Backend = struct
   end
 end
 
-module Compositor = struct
-
-  type outputs_handler =
-      Outputs_handler :
-        < output_added : t -> Output.t -> Output.handler;
-          output_destroyed : t -> Output.t -> unit;
-          .. >
-      -> outputs_handler
-
-  and outputs_manager = {
-    mutable outputs : (Output.t * Output.manager * unit Wl.Listener.t) list;
-    handler : outputs_handler;
-    mutable output_added : Output.t Wl.Listener.t;
-  }
-
-  and t = {
-    mutable outputs_manager : outputs_manager;
-    compositor : Types.Compositor.t ptr;
-    backend : Backend.t;
-    display : Wl.Display.t;
-    event_loop : Wl.Event_loop.t;
-    renderer : Renderer.t;
-    socket : string;
-    shm_fd : int;
-  }
-
-  let outputs_handler_default : outputs_handler =
-    Outputs_handler (object
-      method output_added _ _ = Output.handler_default
-      method output_destroyed _ _ = ()
-    end)
-
-  let event_new_output c = Backend.Events.new_output c.backend
-
-  let create_outputs_manager comp handler =
-    let rec manager = {
-      outputs = [];
-      handler;
-      output_added = Wl.Listener.create (fun _ -> assert false);
-    } in
-    let output_added = Wl.Listener.create (fun output ->
-      let Outputs_handler h = handler in
-      let output_handler = h#output_added comp output in
-      let destroy_listener = Wl.Listener.create (fun () ->
-        h#output_destroyed comp output;
-        manager.outputs <- List.filter (fun (output', manager, listener) ->
-          if Output.equal output output' then (
-            Output.destroy_manager manager;
-            Wl.Listener.detach listener;
-            true
-          ) else false
-        ) manager.outputs
-      ) in
-      Wl.Signal.add (Output.event_destroy output) destroy_listener;
-      let output_manager = Output.create_manager output output_handler in
-      manager.outputs <- (output, output_manager, destroy_listener) ::
-                         manager.outputs
-    ) in
-    manager.output_added <- output_added;
-    Wl.Signal.add (event_new_output comp) output_added;
-    manager
-
-  let destroy_outputs_manager (manager: outputs_manager) =
-    List.iter (fun (_, manager, listener) ->
-      Output.destroy_manager manager;
-      Wl.Listener.detach listener
-    ) manager.outputs;
-    Wl.Listener.detach manager.output_added
-
-  let create ?(outputs_handler = outputs_handler_default) () =
-    let display = Wl.Display.create () in
-    let event_loop = Wl.Display.get_event_loop display in
-    let backend = Backend.autocreate display in
-    let shm_fd = Wl.Display.init_shm display in
-    let renderer = Backend.get_renderer backend in (* ? *)
-    let socket = Wl.Display.add_socket_auto display in
-    let compositor = Bindings.wlr_compositor_create display renderer in
-    (* Somehow required to tie the recursive knot. *)
-    let dummy_manager = {
-      outputs = []; handler = outputs_handler_default;
-      output_added = Wl.Listener.create (fun _ -> assert false)
-    } in
-    let comp =
-      { outputs_manager = dummy_manager;
-        compositor; backend; display; event_loop; renderer; socket; shm_fd }
-    in
-    comp.outputs_manager <- create_outputs_manager comp outputs_handler;
-    comp
-
-  let run c =
-    if not (Backend.start c.backend) then (
-      Backend.destroy c.backend;
-      failwith "Failed to start backend"
-    );
-    Unix.putenv "WAYLAND_DISPLAY" c.socket;
-    Wl.Display.run c.display
-
-  let terminate c =
-    destroy_outputs_manager c.outputs_manager;
-    Bindings.wlr_compositor_destroy c.compositor; (* ? *)
-    Wl.Display.destroy c.display
-
-  let display c = c.display
-  let event_loop c = c.event_loop
-  let renderer c = c.renderer
-
-  let surfaces comp =
-    (comp.compositor |-> Types.Compositor.surfaces)
-    |> Bindings.ocaml_of_wl_list
-      (container_of Types.Wl_resource.t Types.Wl_resource.link)
-end
-
 module Xdg_shell_v6 = struct
   type t = Types.Xdg_shell_v6.t ptr
   include Ptr
@@ -449,4 +337,140 @@ module Log = struct
   (* TODO: callback *)
   let init importance =
     Bindings.wlr_log_init importance null
+end
+
+module Compositor = struct
+
+  type outputs_handler =
+      Outputs_handler :
+        < output_added : t -> Output.t -> Output.handler;
+          output_destroyed : t -> Output.t -> unit;
+          .. >
+      -> outputs_handler
+
+  and outputs_manager = {
+    mutable outputs : (Output.t * Output.manager * unit Wl.Listener.t) list;
+    handler : outputs_handler;
+    mutable output_added : Output.t Wl.Listener.t;
+  }
+
+  and t = {
+    compositor : Types.Compositor.t ptr;
+    backend : Backend.t;
+    display : Wl.Display.t;
+    event_loop : Wl.Event_loop.t;
+    renderer : Renderer.t;
+    socket : string;
+    shm_fd : int;
+    mutable outputs_manager : outputs_manager;
+    mutable screenshooter : Screenshooter.t option;
+    mutable idle : Idle.t option;
+    mutable xdg_shell_v6 : Xdg_shell_v6.t option;
+    mutable primary_selection : Primary_selection.Device_manager.t option;
+    mutable gamma_control : Gamma_control.Manager.t option;
+  }
+
+  let outputs_handler_default : outputs_handler =
+    Outputs_handler (object
+      method output_added _ _ = Output.handler_default
+      method output_destroyed _ _ = ()
+    end)
+
+  let event_new_output c = Backend.Events.new_output c.backend
+
+  let create_outputs_manager comp handler =
+    let rec manager = {
+      outputs = [];
+      handler;
+      output_added = Wl.Listener.create (fun _ -> assert false);
+    } in
+    let output_added = Wl.Listener.create (fun output ->
+      let Outputs_handler h = handler in
+      let output_handler = h#output_added comp output in
+      let destroy_listener = Wl.Listener.create (fun () ->
+        h#output_destroyed comp output;
+        manager.outputs <- List.filter (fun (output', manager, listener) ->
+          if Output.equal output output' then (
+            Output.destroy_manager manager;
+            Wl.Listener.detach listener;
+            true
+          ) else false
+        ) manager.outputs
+      ) in
+      Wl.Signal.add (Output.event_destroy output) destroy_listener;
+      let output_manager = Output.create_manager output output_handler in
+      manager.outputs <- (output, output_manager, destroy_listener) ::
+                         manager.outputs
+    ) in
+    manager.output_added <- output_added;
+    Wl.Signal.add (event_new_output comp) output_added;
+    manager
+
+  let destroy_outputs_manager (manager: outputs_manager) =
+    List.iter (fun (_, manager, listener) ->
+      Output.destroy_manager manager;
+      Wl.Listener.detach listener
+    ) manager.outputs;
+    Wl.Listener.detach manager.output_added
+
+  let create
+      ?(outputs_handler = outputs_handler_default)
+      ?(screenshooter = true)
+      ?(idle = true)
+      ?(xdg_shell_v6 = true)
+      ?(primary_selection = true)
+      ?(gamma_control = true)
+      ()
+    =
+    (* simple helper for the boolean flags *)
+    let flag b f x = if b then Some (f x) else None in
+    let display = Wl.Display.create () in
+    let event_loop = Wl.Display.get_event_loop display in
+    let backend = Backend.autocreate display in
+    let shm_fd = Wl.Display.init_shm display in
+    let renderer = Backend.get_renderer backend in (* ? *)
+    let socket = Wl.Display.add_socket_auto display in
+    let compositor = Bindings.wlr_compositor_create display renderer in
+    let screenshooter = flag screenshooter Screenshooter.create display in
+    let idle = flag idle Idle.create display in
+    let xdg_shell_v6 = flag xdg_shell_v6 Xdg_shell_v6.create display in
+    let primary_selection =
+      flag primary_selection Primary_selection.Device_manager.create display in
+    let gamma_control =
+      flag gamma_control Gamma_control.Manager.create display in
+
+    (* Somehow required to tie the recursive knot. *)
+    let dummy_manager = {
+      outputs = []; handler = outputs_handler_default;
+      output_added = Wl.Listener.create (fun _ -> assert false);
+    } in
+    let comp = {
+      outputs_manager = dummy_manager; (* Will be initialized below *)
+      compositor; backend; display; event_loop; renderer; socket; shm_fd;
+      screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control;
+    } in
+    comp.outputs_manager <- create_outputs_manager comp outputs_handler;
+    comp
+
+  let run c =
+    if not (Backend.start c.backend) then (
+      Backend.destroy c.backend;
+      failwith "Failed to start backend"
+    );
+    Unix.putenv "WAYLAND_DISPLAY" c.socket;
+    Wl.Display.run c.display
+
+  let terminate c =
+    destroy_outputs_manager c.outputs_manager;
+    Bindings.wlr_compositor_destroy c.compositor; (* ? *)
+    Wl.Display.destroy c.display
+
+  let display c = c.display
+  let event_loop c = c.event_loop
+  let renderer c = c.renderer
+
+  let surfaces comp =
+    (comp.compositor |-> Types.Compositor.surfaces)
+    |> Bindings.ocaml_of_wl_list
+      (container_of Types.Wl_resource.t Types.Wl_resource.link)
 end

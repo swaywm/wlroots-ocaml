@@ -147,7 +147,15 @@ module Compositor : sig
 
   val outputs_handler_default : outputs_handler
 
-  val create : ?outputs_handler:outputs_handler -> unit -> t
+  val create :
+    ?outputs_handler:outputs_handler ->
+    ?screenshooter:bool ->
+    ?idle:bool ->
+    ?xdg_shell_v6:bool ->
+    ?primary_selection:bool ->
+    ?gamma_control:bool ->
+    unit ->
+    t
   val run : t -> unit
   val terminate : t -> unit
 
