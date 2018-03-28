@@ -4,22 +4,45 @@ open Wlroots_common.Utils
 module Bindings = Wlroots_ffi_f.Ffi.Make (Generated_ffi)
 module Types = Wlroots_ffi_f.Ffi.Types
 
-module Wl = struct
+type event = ..
 
+type handler = event -> unit
+
+let handler_pack (state: 'a) (handle: 'event -> 'a -> 'a): handler =
+  let st = ref state in
+  fun event -> st := (handle event !st)
+
+let handler_nop : handler = fun _ -> ()
+let handler_dummy : handler = fun _ -> assert false
+
+module Wl = struct
   module Event_loop = struct
     type t = unit ptr
     include Ptr
   end
 
   module Listener = struct
+    (* Resources associated to a [Listener.t] (subscription to events
+       broadcasted by a ['a Signal.t]) are manually managed.
+
+       Attaching a listener to a signal using [Signal.add] registers the listener
+       and gives its ownership to the C code. After attaching it, dropping the
+       handle on a listener will not free the listener and its associated
+       resources: one needs to explicitly call [detach] first (which un-registers
+       it from the signal).
+
+       NB: Detaching a listener then re-attaching it to the same or a different
+       signal is possible -- detaching a listener does not necessarily means
+       destroying it *)
+    type callback = Types.Wl_listener.t ptr -> unit ptr -> unit
+    let callback_dummy _ _ = assert false
+
     type listener = {
       c : Types.Wl_listener.t ptr;
-      (* Tie the lifetime of the OCaml callback function to the lifetime of the C
+      (* Tie the lifetime of the OCaml callbacks to the lifetime of the C
          structure, to prevent untimely memory collection *)
-      mutable notify : Types.Wl_listener.t ptr -> unit ptr -> unit;
+      mutable notify : callback;
     }
-
-    let notify_dummy _ _ = assert false
 
     type t = listener O.t
 
@@ -29,11 +52,12 @@ module Wl = struct
 
     let create () : t =
       let c_struct = make Types.Wl_listener.t in
-      (* we do not set the [notify] field of the C structure yet. It will be done
-         by [Signal.add], which will provide the coercion function from [void*] to
-         ['a], computed from the [typ] field of the signal, and compose it with
-         the callback (of type ['a -> unit]) to obtain [notify]. *)
-      O.create { c = addr c_struct; notify = notify_dummy }
+      (* we do not set the [notify] field of the C structure yet. It will be
+         done by [Signal.add], which will provide the coercion function from
+         [void*] to ['a], computed from the [typ] field of the signal, and
+         compose it with the callback (of type ['a -> unit]), pre, and post, to
+         obtain [notify]. *)
+      O.create { c = addr c_struct; notify = callback_dummy }
 
     let state (listener : t) : [`attached | `detached] =
       match O.state listener with
@@ -45,9 +69,9 @@ module Wl = struct
       | `owned -> ()
       | `transfered_to_c ->
         let raw_listener = O.reclaim_ownership listener in
-        (* Throw away [notify] which was [notify] (which we keep) + a user
-           closure which can now be garbage collected. *)
-        raw_listener.notify <- notify_dummy;
+        (* Throw away [notify], so that the user closure can get garbage
+           collected *)
+        raw_listener.notify <- callback_dummy;
         (* Detach the listener from its signal, as advised in the documentation of
            [wl_listener]. *)
         Bindings.wl_list_remove (raw_listener.c |-> Types.Wl_listener.link)
@@ -63,10 +87,10 @@ module Wl = struct
     let equal x y = mk_equal compare x y
     let hash t = ptr_hash t.c
 
-    let add (signal : 'a t) (listener : Listener.t) (callback: 'a -> unit) =
+    let add (signal : 'a t) (listener : Listener.t) (user_callback: 'a -> unit) =
       match listener with
       | O.{ box = Owned raw_listener } ->
-        let notify _ data = callback (coerce (ptr void) signal.typ data) in
+        let notify _ data = user_callback (coerce (ptr void) signal.typ data) in
         raw_listener.notify <- notify;
         setf (!@ (raw_listener.c)) Types.Wl_listener.notify notify;
         Bindings.wl_signal_add signal.c raw_listener.c;
@@ -177,9 +201,48 @@ module Matrix = struct
 end
 
 module Output = struct
-  type t = Types.Output.t ptr
-  let t = ptr Types.Output.t
-  include Ptr
+  type t = {
+    raw : Types.Output.t ptr;
+    frame : Wl.Listener.t;
+    destroy : Wl.Listener.t;
+  }
+
+  let raw = ptr Types.Output.t
+  let compare o1 o2 = Ptr.compare o1.raw o2.raw
+  let equal = mk_equal compare
+  let hash o = Ptr.hash o.raw
+
+  type event +=
+    | Frame of t
+    | Destroy of t
+
+  let signal_frame (output_raw : Types.Output.t ptr)
+    : Types.Output.t ptr Wl.Signal.t = {
+    c = output_raw |-> Types.Output.events_frame;
+    typ = raw;
+  }
+
+  let signal_destroy (output_raw : Types.Output.t ptr)
+    : Types.Output.t ptr Wl.Signal.t = {
+    c = output_raw |-> Types.Output.events_destroy;
+    typ = raw;
+  }
+
+  (* This creates a new [t] structure from a raw pointer. It must be only called
+     at most once for each different raw pointer *)
+  let create (raw: Types.Output.t ptr) (handler: handler): t =
+    let frame = Wl.Listener.create () in
+    let destroy = Wl.Listener.create () in
+    let output = { raw; frame; destroy } in
+    Wl.Signal.add (signal_frame raw) frame (fun _ ->
+      handler (Frame output)
+    );
+    Wl.Signal.add (signal_destroy raw) destroy (fun _ ->
+      handler (Destroy output);
+      Wl.Listener.detach frame;
+      Wl.Listener.detach destroy
+    );
+    output
 
   module Mode = struct
     type t = Types.Output_mode.t ptr
@@ -192,15 +255,15 @@ module Output = struct
   end
 
   let modes (output : t) : Mode.t list =
-    (output |-> Types.Output.modes)
+    (output.raw |-> Types.Output.modes)
     |> Bindings.ocaml_of_wl_list
       (container_of Types.Output_mode.t Types.Output_mode.link)
 
   let transform_matrix (output : t) : Matrix.t =
-    CArray.start (output |->> Types.Output.transform_matrix)
+    CArray.start (output.raw |->> Types.Output.transform_matrix)
 
   let set_mode (output : t) (mode : Mode.t): bool =
-    Bindings.wlr_output_set_mode output mode
+    Bindings.wlr_output_set_mode output.raw mode
 
   let best_mode (output : t): Mode.t option =
     match modes output with
@@ -216,26 +279,14 @@ module Output = struct
 
   let make_current (output : t) : bool =
     (* TODO: handle buffer age *)
-    Bindings.wlr_output_make_current output
+    Bindings.wlr_output_make_current output.raw
       (coerce (ptr void) (ptr int) null)
 
   let swap_buffers (output : t) : bool =
-    Bindings.wlr_output_swap_buffers output null null
+    Bindings.wlr_output_swap_buffers output.raw null null
 
   let create_global (output : t) =
-    Bindings.wlr_output_create_global output
-
-  module Events = struct
-    let destroy (output : t) : t Wl.Signal.t = {
-      c = output |-> Types.Output.events_destroy;
-      typ = t;
-    }
-
-    let frame (output : t) : t Wl.Signal.t = {
-      c = output |-> Types.Output.events_frame;
-      typ = t;
-    }
-  end
+    Bindings.wlr_output_create_global output.raw
 end
 
 module Renderer = struct
@@ -243,7 +294,7 @@ module Renderer = struct
   include Ptr
 
   let begin_ (renderer : t) (output : Output.t) =
-    Bindings.wlr_renderer_begin renderer output
+    Bindings.wlr_renderer_begin renderer output.raw
 
   let end_ (renderer : t) =
     Bindings.wlr_renderer_end renderer
@@ -270,12 +321,10 @@ module Backend = struct
 
   let get_renderer = Bindings.wlr_backend_get_renderer
 
-  module Events = struct
-    let new_output (backend : t) : Output.t Wl.Signal.t = {
-      c = backend |-> Types.Backend.events_new_output;
-      typ = Output.t;
-    }
-  end
+  let signal_new_output (backend: t) : Types.Output.t ptr Wl.Signal.t = {
+    c = backend |-> Types.Backend.events_new_output;
+    typ = Output.raw;
+  }
 end
 
 module Xdg_shell_v6 = struct
@@ -334,12 +383,25 @@ module Compositor = struct
     renderer : Renderer.t;
     socket : string;
     shm_fd : int;
+    output_added : Wl.Listener.t;
+    mutable handler : handler;
     mutable screenshooter : Screenshooter.t option;
     mutable idle : Idle.t option;
     mutable xdg_shell_v6 : Xdg_shell_v6.t option;
     mutable primary_selection : Primary_selection.Device_manager.t option;
     mutable gamma_control : Gamma_control.Manager.t option;
   }
+
+  type event +=
+    | Output_added of Output.t
+
+  let destroy (c: t) =
+    (* It seems that it is not needed to manually destroy [c.screenshooter],
+       [c.idle], ... as well as detaching [c.output_added], as they get
+       automatically cleaned up by the code below. *)
+    Bindings.wlr_compositor_destroy c.compositor;
+    Backend.destroy c.backend;
+    Wl.Display.destroy c.display
 
   let create
       ?(screenshooter = true)
@@ -358,6 +420,7 @@ module Compositor = struct
     let renderer = Backend.get_renderer backend in (* ? *)
     let socket = Wl.Display.add_socket_auto display in
     let compositor = Bindings.wlr_compositor_create display renderer in
+    let output_added = Wl.Listener.create () in
     let screenshooter = flag screenshooter Screenshooter.create display in
     let idle = flag idle Idle.create display in
     let xdg_shell_v6 = flag xdg_shell_v6 Xdg_shell_v6.create display in
@@ -366,31 +429,36 @@ module Compositor = struct
     let gamma_control =
       flag gamma_control Gamma_control.Manager.create display in
 
-    { compositor; backend; display; event_loop; renderer; socket; shm_fd;
-      screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control; }
-
-  let run c =
-    if not (Backend.start c.backend) then (
-      Backend.destroy c.backend;
-      failwith "Failed to start backend"
-    );
-    Unix.putenv "WAYLAND_DISPLAY" c.socket;
-    Wl.Display.run c.display
-
-  let terminate c =
-    Bindings.wlr_compositor_destroy c.compositor; (* ? *)
-    Wl.Display.destroy c.display
+    let c =
+      { compositor; backend; display; event_loop; renderer; socket; shm_fd;
+        output_added; handler = handler_dummy;
+        screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control; }
+    in
+    Wl.Signal.add (Backend.signal_new_output backend) output_added
+      (fun output_raw ->
+         let output = Output.create output_raw c.handler in
+         c.handler (Output_added output));
+    c
 
   let display c = c.display
   let event_loop c = c.event_loop
   let renderer c = c.renderer
 
-  module Events = struct
-    let new_output c = Backend.Events.new_output c.backend
-  end
-
   let surfaces comp =
     (comp.compositor |-> Types.Compositor.surfaces)
     |> Bindings.ocaml_of_wl_list
       (container_of Types.Wl_resource.t Types.Wl_resource.link)
+end
+
+module Main = struct
+  let run ~state ~handler (c: Compositor.t) =
+    c.handler <- handler_pack state handler;
+    if not (Backend.start c.backend) then (
+      Compositor.destroy c;
+      failwith "Failed to start backend"
+    );
+    Unix.putenv "WAYLAND_DISPLAY" c.socket;
+    Wl.Display.run c.display
+
+  let terminate = Compositor.destroy
 end

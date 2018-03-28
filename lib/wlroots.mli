@@ -1,34 +1,8 @@
 open Wlroots_common.Sigs
 
+type event = ..
+
 module Wl : sig
-  module Listener : sig
-    (* Resources associated to a [Listener.t] (subscription to events
-       broadcasted by a ['a Signal.t]) are manually managed.
-
-       Attaching a listener to a signal using [Signal.add] registers the listener
-       and gives its ownership to the C code. After attaching it, dropping the
-       handle on a listener will not free the listener and its associated
-       resources: one needs to explicitly call [detach] first (which un-registers
-       it from the signal).
-
-       NB: Detaching a listener then re-attaching it to the same or a different
-       signal is possible -- detaching a listener does not necessarily means
-       destroying it *)
-    type t
-    include Comparable0 with type t := t
-
-    val create : unit -> t
-    val state : t -> [`attached | `detached]
-    val detach : t -> unit
-  end
-
-  module Signal : sig
-    type 'a t
-    include Comparable1 with type 'a t := 'a t
-
-    val add : 'a t -> Listener.t -> ('a -> unit) -> unit
-  end
-
   module Event_loop : sig
     type t
     include Comparable0 with type t := t
@@ -98,6 +72,10 @@ module Output : sig
   type t
   include Comparable0 with type t := t
 
+  type event +=
+    | Frame of t
+    | Destroy of t
+
   module Mode : sig
     type t
     include Comparable0 with type t := t
@@ -118,11 +96,6 @@ module Output : sig
   val make_current : t -> bool
   val swap_buffers : t -> bool
   val create_global : t -> unit
-
-  module Events : sig
-    val destroy : t -> t Wl.Signal.t
-    val frame : t -> t Wl.Signal.t
-  end
 end
 
 module Renderer : sig
@@ -139,6 +112,9 @@ end
 module Compositor : sig
   type t
 
+  type event +=
+    | Output_added of Output.t
+
   val create :
     ?screenshooter:bool ->
     ?idle:bool ->
@@ -147,17 +123,21 @@ module Compositor : sig
     ?gamma_control:bool ->
     unit ->
     t
-  val run : t -> unit
-  val terminate : t -> unit
 
   val display : t -> Wl.Display.t
   val event_loop : t -> Wl.Event_loop.t
   val renderer : t -> Renderer.t
   val surfaces : t -> Wl.Resource.t list
+end
 
-  module Events : sig
-    val new_output : t -> Output.t Wl.Signal.t
-  end
+module Main : sig
+  val run :
+    state:'a ->
+    handler:(event -> 'a -> 'a) ->
+    Compositor.t ->
+    unit
+
+  val terminate : Compositor.t -> unit
 end
 
 module Xdg_shell_v6 : sig
