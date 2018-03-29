@@ -116,6 +116,7 @@ module Compositor : sig
     | Output_added of Output.t
 
   val create :
+    ?manage_outputs:bool ->
     ?screenshooter:bool ->
     ?idle:bool ->
     ?xdg_shell_v6:bool ->

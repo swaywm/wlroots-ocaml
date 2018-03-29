@@ -383,7 +383,7 @@ module Compositor = struct
     renderer : Renderer.t;
     socket : string;
     shm_fd : int;
-    output_added : Wl.Listener.t;
+    output_added : Wl.Listener.t option;
     mutable handler : handler;
     mutable screenshooter : Screenshooter.t option;
     mutable idle : Idle.t option;
@@ -404,6 +404,7 @@ module Compositor = struct
     Wl.Display.destroy c.display
 
   let create
+      ?(manage_outputs = true)
       ?(screenshooter = true)
       ?(idle = true)
       ?(xdg_shell_v6 = true)
@@ -420,7 +421,7 @@ module Compositor = struct
     let renderer = Backend.get_renderer backend in (* ? *)
     let socket = Wl.Display.add_socket_auto display in
     let compositor = Bindings.wlr_compositor_create display renderer in
-    let output_added = Wl.Listener.create () in
+    let output_added = flag manage_outputs Wl.Listener.create () in
     let screenshooter = flag screenshooter Screenshooter.create display in
     let idle = flag idle Idle.create display in
     let xdg_shell_v6 = flag xdg_shell_v6 Xdg_shell_v6.create display in
@@ -434,10 +435,14 @@ module Compositor = struct
         output_added; handler = handler_dummy;
         screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control; }
     in
-    Wl.Signal.add (Backend.signal_new_output backend) output_added
-      (fun output_raw ->
-         let output = Output.create output_raw c.handler in
-         c.handler (Output_added output));
+    begin match output_added with
+    | Some listener ->
+      Wl.Signal.add (Backend.signal_new_output backend) listener
+        (fun output_raw ->
+           let output = Output.create output_raw c.handler in
+           c.handler (Output_added output))
+    | None -> ()
+    end;
     c
 
   let display c = c.display
