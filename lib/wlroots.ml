@@ -207,7 +207,6 @@ module Output = struct
     destroy : Wl.Listener.t;
   }
 
-  let raw = ptr Types.Output.t
   let compare o1 o2 = Ptr.compare o1.raw o2.raw
   let equal = mk_equal compare
   let hash o = Ptr.hash o.raw
@@ -219,13 +218,13 @@ module Output = struct
   let signal_frame (output_raw : Types.Output.t ptr)
     : Types.Output.t ptr Wl.Signal.t = {
     c = output_raw |-> Types.Output.events_frame;
-    typ = raw;
+    typ = ptr Types.Output.t;
   }
 
   let signal_destroy (output_raw : Types.Output.t ptr)
     : Types.Output.t ptr Wl.Signal.t = {
     c = output_raw |-> Types.Output.events_destroy;
-    typ = raw;
+    typ = ptr Types.Output.t;
   }
 
   (* This creates a new [t] structure from a raw pointer. It must be only called
@@ -289,6 +288,90 @@ module Output = struct
     Bindings.wlr_output_create_global output.raw
 end
 
+module Keyboard = struct
+  type t = Types.Keyboard.t ptr
+  include Ptr
+end
+
+module Pointer = struct
+  type t = Types.Pointer.t ptr
+  include Ptr
+end
+
+module Touch = struct
+  type t = Types.Touch.t ptr
+  include Ptr
+end
+
+module Tablet_tool = struct
+  type t = Types.Tablet_tool.t ptr
+  include Ptr
+end
+
+module Tablet_pad = struct
+  type t = Types.Tablet_pad.t ptr
+  include Ptr
+end
+
+module Input_device = struct
+  type t = {
+    raw : Types.Input_device.t ptr;
+    destroy : Wl.Listener.t;
+  }
+
+  let compare x1 x2 = Ptr.compare x1.raw x2.raw
+  let equal = mk_equal compare
+  let hash x = Ptr.hash x.raw
+
+  type event +=
+    | Destroy of t
+
+  let signal_destroy (input_raw : Types.Input_device.t ptr)
+    : Types.Input_device.t ptr Wl.Signal.t = {
+    c = input_raw |-> Types.Input_device.events_destroy;
+    typ = ptr Types.Input_device.t;
+  }
+
+  (* This creates a new [t] structure from a raw pointer. It must be only called
+     at most once for each different raw pointer *)
+  let create (raw: Types.Input_device.t ptr) (handler: handler): t =
+    let destroy = Wl.Listener.create () in
+    let input = { raw; destroy } in
+    Wl.Signal.add (signal_destroy raw) destroy (fun _ ->
+      handler (Destroy input)
+    );
+    input
+
+  type typ =
+    | Keyboard of Keyboard.t
+    | Pointer of Pointer.t
+    | Touch of Touch.t
+    | Tablet_tool of Tablet_tool.t
+    | Tablet_pad of Tablet_pad.t
+
+  let typ (input: t): typ =
+    match input.raw |->> Types.Input_device.typ with
+    | Types.Input_device.Type.Keyboard ->
+      Keyboard (input.raw |->> Types.Input_device.keyboard)
+    | Types.Input_device.Type.Pointer ->
+      Pointer (input.raw |->> Types.Input_device.pointer)
+    | Types.Input_device.Type.Touch ->
+      Touch (input.raw |->> Types.Input_device.touch)
+    | Types.Input_device.Type.Tablet_tool ->
+      Tablet_tool (input.raw |->> Types.Input_device.tablet_tool)
+    | Types.Input_device.Type.Tablet_pad ->
+      Tablet_pad (input.raw |->> Types.Input_device.tablet_pad)
+
+  let vendor (input: t): int =
+    input.raw |->> Types.Input_device.vendor
+
+  let product (input: t): int =
+    input.raw |->> Types.Input_device.product
+
+  let name (input: t): string =
+    input.raw |->> Types.Input_device.name
+end
+
 module Renderer = struct
   type t = Types.Renderer.t ptr
   include Ptr
@@ -323,7 +406,12 @@ module Backend = struct
 
   let signal_new_output (backend: t) : Types.Output.t ptr Wl.Signal.t = {
     c = backend |-> Types.Backend.events_new_output;
-    typ = Output.raw;
+    typ = ptr Types.Output.t;
+  }
+
+  let signal_new_input (backend: t) : Types.Input_device.t ptr Wl.Signal.t = {
+    c = backend |-> Types.Backend.events_new_input;
+    typ = ptr Types.Input_device.t;
   }
 end
 
@@ -384,6 +472,7 @@ module Compositor = struct
     socket : string;
     shm_fd : int;
     new_output : Wl.Listener.t option;
+    new_input : Wl.Listener.t option;
     mutable handler : handler;
     mutable screenshooter : Screenshooter.t option;
     mutable idle : Idle.t option;
@@ -394,6 +483,7 @@ module Compositor = struct
 
   type event +=
     | New_output of Output.t
+    | New_input of Input_device.t
 
   let destroy (c: t) =
     (* It seems that it is not needed to manually destroy [c.screenshooter],
@@ -405,6 +495,7 @@ module Compositor = struct
 
   let create
       ?(manage_outputs = true)
+      ?(manage_inputs = true)
       ?(screenshooter = true)
       ?(idle = true)
       ?(xdg_shell_v6 = true)
@@ -422,6 +513,7 @@ module Compositor = struct
     let socket = Wl.Display.add_socket_auto display in
     let compositor = Bindings.wlr_compositor_create display renderer in
     let new_output = flag manage_outputs Wl.Listener.create () in
+    let new_input = flag manage_inputs Wl.Listener.create () in
     let screenshooter = flag screenshooter Screenshooter.create display in
     let idle = flag idle Idle.create display in
     let xdg_shell_v6 = flag xdg_shell_v6 Xdg_shell_v6.create display in
@@ -432,16 +524,24 @@ module Compositor = struct
 
     let c =
       { compositor; backend; display; event_loop; renderer; socket; shm_fd;
-        new_output; handler = handler_dummy;
+        new_output; new_input; handler = handler_dummy;
         screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control; }
     in
     begin match new_output with
-    | Some listener ->
-      Wl.Signal.add (Backend.signal_new_output backend) listener
-        (fun output_raw ->
-           let output = Output.create output_raw c.handler in
-           c.handler (New_output output))
-    | None -> ()
+      | Some listener ->
+        Wl.Signal.add (Backend.signal_new_output backend) listener
+          (fun output_raw ->
+             let output = Output.create output_raw c.handler in
+             c.handler (New_output output))
+      | None -> ()
+    end;
+    begin match new_input with
+      | Some listener ->
+        Wl.Signal.add (Backend.signal_new_input backend) listener
+          (fun input_raw ->
+             let input_device = Input_device.create input_raw c.handler in
+             c.handler (New_input input_device))
+      | None -> ()
     end;
     c
 

@@ -110,6 +110,84 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Keyboard = struct
+    type t = [`keyboard] Ctypes.structure
+    let t : t typ = structure "wlr_keyboard"
+
+    let () = seal t
+  end
+
+  module Pointer = struct
+    type t = [`pointer] Ctypes.structure
+    let t : t typ = structure "wlr_pointer"
+
+    let () = seal t
+  end
+
+  module Touch = struct
+    type t = [`touch] Ctypes.structure
+    let t : t typ = structure "wlr_touch"
+
+    let () = seal t
+  end
+
+  module Tablet_tool = struct
+    type t = [`tablet_tool] Ctypes.structure
+    let t : t typ = structure "wlr_tablet_tool"
+
+    let () = seal t
+  end
+
+  module Tablet_pad = struct
+    type t = [`tablet_pad] Ctypes.structure
+    let t : t typ = structure "wlr_tablet_pad"
+
+    let () = seal t
+  end
+
+  module Input_device = struct
+    type t = [`output_device] Ctypes.structure
+    let t : t typ = structure "wlr_input_device"
+
+    module Type = struct
+      type t =
+        | Keyboard
+        | Pointer
+        | Touch
+        | Tablet_tool
+        | Tablet_pad
+
+      let _KEYBOARD = constant "WLR_INPUT_DEVICE_KEYBOARD" int64_t
+      let _POINTER = constant "WLR_INPUT_DEVICE_POINTER" int64_t
+      let _TOUCH = constant "WLR_INPUT_DEVICE_TOUCH" int64_t
+      let _TABLET_TOOL = constant "WLR_INPUT_DEVICE_TABLET_TOOL" int64_t
+      let _TABLET_PAD = constant "WLR_INPUT_DEVICE_TABLET_PAD" int64_t
+
+      let t : t typ = enum "wlr_input_device_type" [
+        Keyboard, _KEYBOARD;
+        Pointer, _POINTER;
+        Touch, _TOUCH;
+        Tablet_tool, _TABLET_TOOL;
+        Tablet_pad, _TABLET_PAD;
+      ]
+    end
+
+    let typ = field t "type" Type.t
+    let vendor = field t "vendor" int
+    let product = field t "product" int
+    let name = field t "name" string
+    let keyboard = field t "keyboard" (ptr Keyboard.t)
+    let pointer = field t "pointer" (ptr Pointer.t)
+    let touch = field t "touch" (ptr Touch.t)
+    let tablet_tool = field t "tablet_tool" (ptr Tablet_tool.t)
+    let tablet_pad = field t "tablet_pad" (ptr Tablet_pad.t)
+
+    let events_destroy = field t "events.destroy" Wl_signal.t
+
+    (* TODO *)
+    let () = seal t
+  end
+
   module Backend = struct
     type t = [`backend] Ctypes.structure
     let t : t typ = structure "wlr_backend"

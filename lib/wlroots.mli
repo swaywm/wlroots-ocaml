@@ -98,6 +98,51 @@ module Output : sig
   val create_global : t -> unit
 end
 
+module Keyboard : sig
+  type t
+  include Comparable0 with type t := t
+end
+
+module Pointer : sig
+  type t
+  include Comparable0 with type t := t
+end
+
+module Touch : sig
+  type t
+  include Comparable0 with type t := t
+end
+
+module Tablet_tool : sig
+  type t
+  include Comparable0 with type t := t
+end
+
+module Tablet_pad : sig
+  type t
+  include Comparable0 with type t := t
+end
+
+module Input_device : sig
+  type t
+  include Comparable0 with type t := t
+
+  type event +=
+    | Destroy of t
+
+  type typ =
+    | Keyboard of Keyboard.t
+    | Pointer of Pointer.t
+    | Touch of Touch.t
+    | Tablet_tool of Tablet_tool.t
+    | Tablet_pad of Tablet_pad.t
+
+  val typ : t -> typ
+  val vendor : t -> int
+  val product : t -> int
+  val name : t -> string
+end
+
 module Renderer : sig
   type t
   include Comparable0 with type t := t
@@ -114,9 +159,11 @@ module Compositor : sig
 
   type event +=
     | New_output of Output.t
+    | New_input of Input_device.t
 
   val create :
     ?manage_outputs:bool ->
+    ?manage_inputs:bool ->
     ?screenshooter:bool ->
     ?idle:bool ->
     ?xdg_shell_v6:bool ->
