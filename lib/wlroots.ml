@@ -383,7 +383,7 @@ module Compositor = struct
     renderer : Renderer.t;
     socket : string;
     shm_fd : int;
-    output_added : Wl.Listener.t option;
+    new_output : Wl.Listener.t option;
     mutable handler : handler;
     mutable screenshooter : Screenshooter.t option;
     mutable idle : Idle.t option;
@@ -393,11 +393,11 @@ module Compositor = struct
   }
 
   type event +=
-    | Output_added of Output.t
+    | New_output of Output.t
 
   let destroy (c: t) =
     (* It seems that it is not needed to manually destroy [c.screenshooter],
-       [c.idle], ... as well as detaching [c.output_added], as they get
+       [c.idle], ... as well as detaching [c.new_output], as they get
        automatically cleaned up by the code below. *)
     Bindings.wlr_compositor_destroy c.compositor;
     Backend.destroy c.backend;
@@ -421,7 +421,7 @@ module Compositor = struct
     let renderer = Backend.get_renderer backend in (* ? *)
     let socket = Wl.Display.add_socket_auto display in
     let compositor = Bindings.wlr_compositor_create display renderer in
-    let output_added = flag manage_outputs Wl.Listener.create () in
+    let new_output = flag manage_outputs Wl.Listener.create () in
     let screenshooter = flag screenshooter Screenshooter.create display in
     let idle = flag idle Idle.create display in
     let xdg_shell_v6 = flag xdg_shell_v6 Xdg_shell_v6.create display in
@@ -432,15 +432,15 @@ module Compositor = struct
 
     let c =
       { compositor; backend; display; event_loop; renderer; socket; shm_fd;
-        output_added; handler = handler_dummy;
+        new_output; handler = handler_dummy;
         screenshooter; idle; xdg_shell_v6; primary_selection; gamma_control; }
     in
-    begin match output_added with
+    begin match new_output with
     | Some listener ->
       Wl.Signal.add (Backend.signal_new_output backend) listener
         (fun output_raw ->
            let output = Output.create output_raw c.handler in
-           c.handler (Output_added output))
+           c.handler (New_output output))
     | None -> ()
     end;
     c

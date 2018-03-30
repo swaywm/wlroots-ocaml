@@ -113,7 +113,7 @@ module Compositor : sig
   type t
 
   type event +=
-    | Output_added of Output.t
+    | New_output of Output.t
 
   val create :
     ?manage_outputs:bool ->
