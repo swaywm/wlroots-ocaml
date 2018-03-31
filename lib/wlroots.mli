@@ -188,53 +188,6 @@ module Main : sig
   val terminate : Compositor.t -> unit
 end
 
-module Xdg_shell_v6 : sig
-  type t
-  include Comparable0 with type t := t
-
-  val create : Wl.Display.t -> t
-  val destroy : t -> unit
-end
-
-module Gamma_control : sig
-  type t
-  include Comparable0 with type t := t
-
-  module Manager : sig
-    type t
-    include Comparable0 with type t := t
-
-    val create : Wl.Display.t -> t
-    val destroy : t -> unit
-  end
-end
-
-module Screenshooter : sig
-  type t
-  include Comparable0 with type t := t
-
-  val create : Wl.Display.t -> t
-  val destroy : t -> unit
-end
-
-module Primary_selection : sig
-  module Device_manager : sig
-    type t
-    include Comparable0 with type t := t
-
-    val create : Wl.Display.t -> t
-    val destroy : t -> unit
-  end
-end
-
-module Idle : sig
-  type t
-  include Comparable0 with type t := t
-
-  val create : Wl.Display.t -> t
-  val destroy : t -> unit
-end
-
 module Log : sig
   type importance =
     | Silent
