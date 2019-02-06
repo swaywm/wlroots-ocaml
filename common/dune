@@ -1,0 +1,4 @@
+(library
+ (name wlroots_common)
+ (public_name wlroots.common)
+ (libraries ctypes))

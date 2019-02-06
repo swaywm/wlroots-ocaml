@@ -2,12 +2,12 @@ EXAMPLES := simple
 EXAMPLES := $(patsubst %,examples/%.exe,$(EXAMPLES))
 
 default:
-	jbuilder build @install
+	dune build @install
 
 examples: $(EXAMPLES)
 
 $(EXAMPLES):
-	jbuilder build $@
+	dune build $@
 
 clean:
 	rm -rf _build

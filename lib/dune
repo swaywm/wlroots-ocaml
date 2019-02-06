@@ -1,0 +1,30 @@
+(rule
+  (with-stdout-to
+   "generated_ffi.ml"
+   (run "../ffi/stubgen.exe" -ml)))
+
+(rule
+  (with-stdout-to
+   "generated_ffi_stubs.c"
+   (run "../ffi/stubgen.exe" -c)))
+
+
+(library
+  (name wlroots)
+  (public_name wlroots)
+  (modules wlroots
+           generated_ffi
+           event wl log texture surface box matrix output
+           keyboard pointer touch tablet_tool tablet_pad input_device
+           backend gamma_control idle primary_selection screenshooter
+           xdg_shell_v6 renderer compositor main)
+  (c_names generated_ffi_stubs)
+  (c_flags (:standard \ -Werror -pedantic -Wall -Wunused -DWLR_USE_UNSTABLE) -w
+           (:include ../config/wlroots-ccopt.sexp)
+           (:include ../config/wayland-server-ccopt.sexp)
+           (:include ../config/pixman-1-ccopt.sexp))
+  (c_library_flags  :standard
+                    (:include ../config/wlroots-cclib.sexp)
+                    (:include ../config/wayland-server-cclib.sexp)
+                    (:include ../config/pixman-1-cclib.sexp))
+  (libraries wlroots_types_f wlroots_ffi_f wlroots_common ctypes.stubs ctypes unix-time.unix mtime.clock.os))

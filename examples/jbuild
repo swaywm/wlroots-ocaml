@@ -1,5 +1,0 @@
-(executables
- ((names (simple))
-  (libraries (wlroots))))
-
-(jbuild_version 1)
