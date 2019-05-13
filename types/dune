@@ -26,7 +26,7 @@
         ../config/pixman-1-ccopt
         ../config/pixman-1-cclib)
   (action (bash "\
-${CC} %{types_stubgen} \
+%{cc} %{types_stubgen} \
   $(< ../config/wlroots-ccopt) $(< ../config/wlroots-cclib) \
   $(< ../config/wayland-server-ccopt) $(< ../config/wayland-server-cclib) \
   $(< ../config/pixman-1-ccopt) $(< ../config/pixman-1-cclib) \
