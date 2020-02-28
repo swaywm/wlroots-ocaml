@@ -1,13 +1,10 @@
+opam-version: "2.0"
 maintainer: "Armael <armael@isomorphis.me>"
 authors: "Armael <armael@isomorphis.me>"
 homepage: "https://github.com/swaywm/wlroots-ocaml"
 bug-reports: "https://github.com/swaywm/wlroots-ocaml/issues"
-opam-version: "1.2"
-build: [
-  ["dune" "build" "-p" name "-j" jobs "@install"]
-]
 depends: [
-#  "conf-wlroots"
+  "ocaml" {>= "4.04.1"}
   "ctypes"
   "ctypes-foreign"
   "dune"
@@ -16,4 +13,4 @@ depends: [
   "base"
   "stdio"
 ]
-available: [ ocaml-version >= "4.04.1" ]
+build: ["dune" "build" "-p" name "-j" jobs "@install"]
