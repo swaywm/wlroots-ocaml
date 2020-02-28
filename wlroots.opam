@@ -4,14 +4,16 @@ homepage: "https://github.com/swaywm/wlroots-ocaml"
 bug-reports: "https://github.com/swaywm/wlroots-ocaml/issues"
 opam-version: "1.2"
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs "@install"]
 ]
 depends: [
 #  "conf-wlroots"
   "ctypes"
   "ctypes-foreign"
-  "jbuilder"                {build & >= "1.0+beta12"}
+  "dune"
   "unix-time"
   "mtime"
+  "base"
+  "stdio"
 ]
 available: [ ocaml-version >= "4.04.1" ]
