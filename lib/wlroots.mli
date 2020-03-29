@@ -1,7 +1,5 @@
 open Wlroots_common.Sigs
 
-type event = ..
-
 module Wl : sig
   module Event_loop : sig
     type t
@@ -21,7 +19,7 @@ module Wl : sig
     type 'a t
     include Comparable1 with type 'a t := 'a t
 
-    val subscribe : 'a t -> Listener.t -> ('a -> unit) -> unit
+    val add : 'a t -> Listener.t -> (Listener.t -> 'a -> unit) -> unit
   end
 
   module Display : sig
@@ -87,10 +85,6 @@ module Output : sig
   type t
   include Comparable0 with type t := t
 
-  type event +=
-    | Frame of t
-    | Destroy of t
-
   module Mode : sig
     type t
     include Comparable0 with type t := t
@@ -111,6 +105,9 @@ module Output : sig
   val create_global : t -> unit
   val attach_render : t -> bool
   val commit : t -> bool
+
+  val signal_frame : t -> t Wl.Signal.t
+  val signal_destroy : t -> t Wl.Signal.t
 end
 
 module Keyboard : sig
@@ -142,9 +139,6 @@ module Input_device : sig
   type t
   include Comparable0 with type t := t
 
-  type event +=
-    | Destroy of t
-
   type typ =
     | Keyboard of Keyboard.t
     | Pointer of Pointer.t
@@ -156,6 +150,8 @@ module Input_device : sig
   val vendor : t -> int
   val product : t -> int
   val name : t -> string
+
+  val signal_destroy : t -> t Wl.Signal.t
 end
 
 module Renderer : sig
@@ -172,34 +168,18 @@ module Backend : sig
   include Comparable0 with type t := t
 
   val autocreate : Wl.Display.t -> t
+  val start : t -> bool
+  val destroy : t -> unit
+
+  val signal_new_output : t -> Output.t Wl.Signal.t
+  val signal_new_input : t -> Input_device.t Wl.Signal.t
+  val signal_destroy : t -> t Wl.Signal.t
 end
 
 module Compositor : sig
   type t
 
-  type event +=
-    | New_output of Output.t
-    | New_input of Input_device.t
-
-  val create :
-    ?manage_outputs:bool ->
-    ?manage_inputs:bool ->
-    unit ->
-    t
-
-  val display : t -> Wl.Display.t
-  val event_loop : t -> Wl.Event_loop.t
-  val renderer : t -> Renderer.t
-end
-
-module Main : sig
-  val run :
-    state:'a ->
-    handler:(event -> 'a -> 'a) ->
-    Compositor.t ->
-    unit
-
-  val terminate : Compositor.t -> unit
+  val create : Wl.Display.t -> Renderer.t -> t
 end
 
 module Log : sig

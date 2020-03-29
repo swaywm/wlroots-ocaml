@@ -1,3 +1,3 @@
 (executables
   (names simple)
-  (libraries wlroots))
+  (libraries wlroots tgls.tgl3 mtime.clock.os))

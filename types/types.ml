@@ -195,6 +195,14 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let events_new_input = field t "events.new_input" Wl_signal.t
     let events_new_output = field t "events.new_output" Wl_signal.t
     let () = seal t
+
+    type renderer_create_func_t =
+      unit ptr -> int -> unit ptr -> unit ptr -> int -> Renderer.t ptr
+    let renderer_create_func_t : renderer_create_func_t option typ =
+      lift_typ
+        (Foreign.funptr_opt
+           (ptr void @-> int @-> ptr void @-> ptr void @-> int @->
+            returning (ptr Renderer.t)))
   end
 
   module Compositor = struct

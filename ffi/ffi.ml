@@ -168,7 +168,7 @@ struct
       (wlr_backend_p @-> returning wlr_renderer_p)
 
   let wlr_backend_autocreate = foreign "wlr_backend_autocreate"
-      (wl_display_p @-> ptr void (* FIXME *) @-> returning wlr_backend_p)
+      (wl_display_p @-> Backend.renderer_create_func_t @-> returning wlr_backend_p)
 
   let wlr_backend_start = foreign "wlr_backend_start"
       (wlr_backend_p @-> returning bool)

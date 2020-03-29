@@ -8,7 +8,7 @@ type t = Types.Backend.t ptr
 include Ptr
 
 let autocreate dpy =
-  let b = Bindings.wlr_backend_autocreate dpy null in
+  let b = Bindings.wlr_backend_autocreate dpy None in
   if is_null b then failwith "Failed to create backend";
   b
 
@@ -25,4 +25,9 @@ let signal_new_output (backend: t) : Types.Output.t ptr Wl.Signal.t = {
 let signal_new_input (backend: t) : Types.Input_device.t ptr Wl.Signal.t = {
   c = backend |-> Types.Backend.events_new_input;
   typ = ptr Types.Input_device.t;
+}
+
+let signal_destroy (backend: t) : t Wl.Signal.t = {
+  c = backend |-> Types.Backend.events_destroy;
+  typ = ptr Types.Backend.t;
 }

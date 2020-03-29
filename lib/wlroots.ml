@@ -1,6 +1,5 @@
 include Event
 
-module Main = Main
 module Compositor = Compositor
 module Backend = Backend
 module Output = Output

@@ -14,7 +14,7 @@ let prologue = "
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xcursor_manager.h>
-// #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/backend.h>
 #include <wlr/util/log.h>
 "
 

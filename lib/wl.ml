@@ -75,10 +75,11 @@ module Signal = struct
   let equal x y = mk_equal compare x y
   let hash t = ptr_hash t.c
 
-  let subscribe (signal : 'a t) (listener : Listener.t) (user_callback: 'a -> unit) =
+  let add (signal : 'a t) (listener : Listener.t)
+      (user_callback: Listener.t -> 'a -> unit) =
     match listener with
     | O.{ box = Owned raw_listener } ->
-      let notify _ data = user_callback (coerce (ptr void) signal.typ data) in
+      let notify _ data = user_callback listener (coerce (ptr void) signal.typ data) in
       raw_listener.notify <- notify;
       setf (!@ (raw_listener.c)) Types.Wl_listener.notify notify;
       Bindings.wl_signal_add signal.c raw_listener.c;
