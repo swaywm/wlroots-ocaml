@@ -75,7 +75,7 @@ module Signal = struct
   let equal x y = mk_equal compare x y
   let hash t = ptr_hash t.c
 
-  let add (signal : 'a t) (listener : Listener.t) (user_callback: 'a -> unit) =
+  let subscribe (signal : 'a t) (listener : Listener.t) (user_callback: 'a -> unit) =
     match listener with
     | O.{ box = Owned raw_listener } ->
       let notify _ data = user_callback (coerce (ptr void) signal.typ data) in

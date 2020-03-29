@@ -36,10 +36,10 @@ let create (raw: Types.Output.t ptr) (handler: Event.handler): t =
   let frame = Wl.Listener.create () in
   let destroy = Wl.Listener.create () in
   let output = { raw; frame; destroy } in
-  Wl.Signal.add (signal_frame raw) frame (fun _ ->
+  Wl.Signal.subscribe (signal_frame raw) frame (fun _ ->
     handler (Frame output)
   );
-  Wl.Signal.add (signal_destroy raw) destroy (fun _ ->
+  Wl.Signal.subscribe (signal_destroy raw) destroy (fun _ ->
     handler (Destroy output);
     Wl.Listener.detach frame;
     Wl.Listener.detach destroy
@@ -50,10 +50,10 @@ module Mode = struct
   type t = Types.Output_mode.t ptr
   include Ptr
 
-  let flags = getfield Types.Output_mode.flags
   let width = getfield Types.Output_mode.width
   let height = getfield Types.Output_mode.height
   let refresh = getfield Types.Output_mode.refresh
+  let preferred = getfield Types.Output_mode.preferred
 end
 
 let modes (output : t) : Mode.t list =
@@ -64,7 +64,7 @@ let modes (output : t) : Mode.t list =
 let transform_matrix (output : t) : Matrix.t =
   CArray.start (output.raw |->> Types.Output.transform_matrix)
 
-let set_mode (output : t) (mode : Mode.t): bool =
+let set_mode (output : t) (mode : Mode.t): unit =
   Bindings.wlr_output_set_mode output.raw mode
 
 let best_mode (output : t): Mode.t option =
@@ -79,13 +79,12 @@ let set_best_mode (output : t) =
     (* TODO log the mode set *)
     set_mode output mode |> ignore
 
-let make_current (output : t) : bool =
-  (* TODO: handle buffer age *)
-  Bindings.wlr_output_make_current output.raw
-    (coerce (ptr void) (ptr int) null)
-
-let swap_buffers (output : t) : bool =
-  Bindings.wlr_output_swap_buffers output.raw null null
-
 let create_global (output : t) =
   Bindings.wlr_output_create_global output.raw
+
+let attach_render (output : t): bool =
+  (* TODO: handle buffer age *)
+  Bindings.wlr_output_attach_render output.raw (coerce (ptr void) (ptr int) null)
+
+let commit (output : t): bool =
+  Bindings.wlr_output_commit output.raw

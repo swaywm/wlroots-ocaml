@@ -8,6 +8,22 @@ module Wl : sig
     include Comparable0 with type t := t
   end
 
+  module Listener : sig
+    type t
+    include Comparable0 with type t := t
+
+    val create : unit -> t
+    val state : t -> [`attached | `detached]
+    val detach : t -> unit
+  end
+
+  module Signal : sig
+    type 'a t
+    include Comparable1 with type 'a t := 'a t
+
+    val subscribe : 'a t -> Listener.t -> ('a -> unit) -> unit
+  end
+
   module Display : sig
     type t
     include Comparable0 with type t := t
@@ -53,7 +69,6 @@ module Surface : sig
 
   val current : t -> State.t
   val pending : t -> State.t
-  val texture : t -> Texture.t
   val send_frame_done : t -> Mtime.t -> unit
 end
 
@@ -80,22 +95,22 @@ module Output : sig
     type t
     include Comparable0 with type t := t
 
-    val flags : t -> Unsigned.uint32
     val width : t -> int32
     val height : t -> int32
     val refresh : t -> int32 (* mHz *)
+    val preferred : t -> bool
   end
 
   (* Setting an output mode *)
   val modes : t -> Mode.t list
-  val set_mode : t -> Mode.t -> bool
+  val set_mode : t -> Mode.t -> unit
   val best_mode : t -> Mode.t option
   val set_best_mode : t -> unit
 
   val transform_matrix : t -> Matrix.t
-  val make_current : t -> bool
-  val swap_buffers : t -> bool
   val create_global : t -> unit
+  val attach_render : t -> bool
+  val commit : t -> bool
 end
 
 module Keyboard : sig
@@ -134,7 +149,7 @@ module Input_device : sig
     | Keyboard of Keyboard.t
     | Pointer of Pointer.t
     | Touch of Touch.t
-    | Tablet_tool of Tablet_tool.t
+    | Tablet of Tablet_tool.t
     | Tablet_pad of Tablet_pad.t
 
   val typ : t -> typ
@@ -147,11 +162,16 @@ module Renderer : sig
   type t
   include Comparable0 with type t := t
 
-  val begin_ : t -> Output.t -> unit
+  val begin_ : t -> width:int -> height:int -> unit
   val end_ : t -> unit
   val clear : t -> float * float * float * float -> unit
+end
 
-  val render_with_matrix : t -> Texture.t -> Matrix.t -> alpha:float -> bool
+module Backend : sig
+  type t
+  include Comparable0 with type t := t
+
+  val autocreate : Wl.Display.t -> t
 end
 
 module Compositor : sig
@@ -164,18 +184,12 @@ module Compositor : sig
   val create :
     ?manage_outputs:bool ->
     ?manage_inputs:bool ->
-    ?screenshooter:bool ->
-    ?idle:bool ->
-    ?xdg_shell_v6:bool ->
-    ?primary_selection:bool ->
-    ?gamma_control:bool ->
     unit ->
     t
 
   val display : t -> Wl.Display.t
   val event_loop : t -> Wl.Event_loop.t
   val renderer : t -> Renderer.t
-  val surfaces : t -> Wl.Resource.t list
 end
 
 module Main : sig

@@ -16,10 +16,9 @@
            generated_ffi
            event wl log texture surface box matrix output
            keyboard pointer touch tablet_tool tablet_pad input_device
-           backend gamma_control idle primary_selection screenshooter
-           xdg_shell_v6 renderer compositor main)
+           backend renderer compositor main)
   (c_names generated_ffi_stubs)
-  (c_flags (:standard \ -Werror -pedantic -Wall -Wunused -DWLR_USE_UNSTABLE) -w
+  (c_flags (:standard -Werror -pedantic -Wall -Wunused -DWLR_USE_UNSTABLE) -w
            (:include ../config/wlroots-ccopt.sexp)
            (:include ../config/wayland-server-ccopt.sexp)
            (:include ../config/pixman-1-ccopt.sexp))

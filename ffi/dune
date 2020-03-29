@@ -2,6 +2,7 @@
   (name wlroots_ffi_f)
   (public_name wlroots.ffi_f)
   (modules generated_types ffi)
+  (flags (:standard -w -9))
   (libraries wlroots_types_f
              wlroots_common
              ctypes ctypes.stubs

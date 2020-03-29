@@ -27,7 +27,7 @@ let signal_destroy (input_raw : Types.Input_device.t ptr)
 let create (raw: Types.Input_device.t ptr) (handler: Event.handler): t =
   let destroy = Wl.Listener.create () in
   let input = { raw; destroy } in
-  Wl.Signal.add (signal_destroy raw) destroy (fun _ ->
+  Wl.Signal.subscribe (signal_destroy raw) destroy (fun _ ->
     handler (Destroy input)
   );
   input
@@ -36,7 +36,7 @@ type typ =
   | Keyboard of Keyboard.t
   | Pointer of Pointer.t
   | Touch of Touch.t
-  | Tablet_tool of Tablet_tool.t
+  | Tablet of Tablet_tool.t (* FIXME? *)
   | Tablet_pad of Tablet_pad.t
 
 let typ (input: t): typ =
@@ -48,7 +48,7 @@ let typ (input: t): typ =
   | Types.Input_device.Type.Touch ->
     Touch (input.raw |->> Types.Input_device.touch)
   | Types.Input_device.Type.Tablet_tool ->
-    Tablet_tool (input.raw |->> Types.Input_device.tablet_tool)
+    Tablet (input.raw |->> Types.Input_device.tablet)
   | Types.Input_device.Type.Tablet_pad ->
     Tablet_pad (input.raw |->> Types.Input_device.tablet_pad)
 

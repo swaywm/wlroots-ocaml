@@ -4,5 +4,5 @@ open Wlroots_common.Utils
 module Bindings = Wlroots_ffi_f.Ffi.Make (Generated_ffi)
 module Types = Wlroots_ffi_f.Ffi.Types
 
-type t = Types.Tablet_tool.t ptr
+type t = Types.Tablet.t ptr
 include Ptr

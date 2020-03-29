@@ -21,6 +21,5 @@ end
 
 let current = getfield Types.Surface.current
 let pending = getfield Types.Surface.pending
-let texture = getfield Types.Surface.texture
 
 let send_frame_done = Bindings.wlr_surface_send_frame_done

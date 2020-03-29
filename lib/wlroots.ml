@@ -2,6 +2,7 @@ include Event
 
 module Main = Main
 module Compositor = Compositor
+module Backend = Backend
 module Output = Output
 module Input_device = Input_device
 module Keyboard = Keyboard

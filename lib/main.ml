@@ -1,4 +1,4 @@
-open Wlroots_common.Utils
+open! Wlroots_common.Utils
 
 let run ~state ~handler (c: Compositor.t) =
   c.handler <- Event.handler_pack state handler;

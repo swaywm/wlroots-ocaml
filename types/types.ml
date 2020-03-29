@@ -70,7 +70,6 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_surface"
     let current = field t "current" (ptr Surface_state.t)
     let pending = field t "pending" (ptr Surface_state.t)
-    let texture = field t "texture" (ptr Texture.t)
     (* TODO *)
     let () = seal t
   end
@@ -88,10 +87,10 @@ module Make (S : Cstubs_structs.TYPE) = struct
   module Output_mode = struct
     type t = [`output_mode] Ctypes.structure
     let t : t typ = structure "wlr_output_mode"
-    let flags = field t "flags" uint32_t
     let width = field t "width" int32_t
     let height = field t "height" int32_t
     let refresh = field t "refresh" int32_t
+    let preferred = field t "preferred" bool
     let link = field t "link" Wl_list.t
     let () = seal t
   end
@@ -131,9 +130,9 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
-  module Tablet_tool = struct
+  module Tablet = struct
     type t = [`tablet_tool] Ctypes.structure
-    let t : t typ = structure "wlr_tablet_tool"
+    let t : t typ = structure "wlr_tablet"
 
     let () = seal t
   end
@@ -179,7 +178,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let keyboard = field t "keyboard" (ptr Keyboard.t)
     let pointer = field t "pointer" (ptr Pointer.t)
     let touch = field t "touch" (ptr Touch.t)
-    let tablet_tool = field t "tablet_tool" (ptr Tablet_tool.t)
+    let tablet = field t "tablet" (ptr Tablet.t)
     let tablet_pad = field t "tablet_pad" (ptr Tablet_pad.t)
 
     let events_destroy = field t "events.destroy" Wl_signal.t
@@ -201,17 +200,9 @@ module Make (S : Cstubs_structs.TYPE) = struct
   module Compositor = struct
     type t = [`compositor] Ctypes.structure
     let t : t typ = structure "wlr_compositor"
-    let surfaces = field t "surfaces" Wl_list.t
 
     (* TODO *)
     let () = seal t
-  end
-
-  module Xdg_shell_v6 = struct
-    type t = [`shell_v6] Ctypes.structure
-    let t : t typ = structure "wlr_xdg_shell_v6"
-    (* TODO *)
-    (* let () = seal t *)
   end
 
   module Log = struct
@@ -221,18 +212,18 @@ module Make (S : Cstubs_structs.TYPE) = struct
       | Info
       | Debug
 
-    let _L_SILENT = constant "L_SILENT" int64_t
-    let _L_ERROR = constant "L_ERROR" int64_t
-    let _L_INFO = constant "L_INFO" int64_t
-    let _L_DEBUG = constant "L_DEBUG" int64_t
-    let _L_LAST = constant "L_LAST" int64_t
+    let _WLR_SILENT = constant "WLR_SILENT" int64_t
+    let _WLR_ERROR = constant "WLR_ERROR" int64_t
+    let _WLR_INFO = constant "WLR_INFO" int64_t
+    let _WLR_DEBUG = constant "WLR_DEBUG" int64_t
+    let _WLR_LOG_IMPORTANCE_LAST = constant "WLR_LOG_IMPORTANCE_LAST" int64_t
 
     let importance : importance typ =
-      enum "log_importance_t" ~typedef:true [
-      Silent, _L_SILENT;
-      Error, _L_ERROR;
-      Info, _L_INFO;
-      Debug, _L_DEBUG;
-    ]
+      enum "wlr_log_importance" [
+        Silent, _WLR_SILENT;
+        Error, _WLR_ERROR;
+        Info, _WLR_INFO;
+        Debug, _WLR_DEBUG;
+      ]
   end
 end

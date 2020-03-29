@@ -107,17 +107,16 @@ struct
   let wlr_output_p = ptr Output.t
 
   let wlr_output_set_mode = foreign "wlr_output_set_mode"
-      (wlr_output_p @-> wlr_output_mode_p @-> returning bool)
-
-  let wlr_output_make_current = foreign "wlr_output_make_current"
-      (wlr_output_p @-> ptr int @-> returning bool)
-
-  (* TODO: handle "when" and "damage" *)
-  let wlr_output_swap_buffers = foreign "wlr_output_swap_buffers"
-      (wlr_output_p @-> ptr void @-> ptr void @-> returning bool)
+      (wlr_output_p @-> wlr_output_mode_p @-> returning void)
 
   let wlr_output_create_global = foreign "wlr_output_create_global"
       (wlr_output_p @-> returning void)
+
+  let wlr_output_attach_render = foreign "wlr_output_attach_render"
+      (wlr_output_p @-> ptr int @-> returning bool)
+
+  let wlr_output_commit = foreign "wlr_output_commit"
+      (wlr_output_p @-> returning bool)
 
   (* wlr_box *)
 
@@ -153,17 +152,13 @@ struct
   let wlr_renderer_p = ptr Renderer.t
 
   let wlr_renderer_begin = foreign "wlr_renderer_begin"
-      (wlr_renderer_p @-> wlr_output_p @-> returning void)
+      (wlr_renderer_p @-> int @-> int @-> returning void)
 
   let wlr_renderer_end = foreign "wlr_renderer_end"
       (wlr_renderer_p @-> returning void)
 
   let wlr_renderer_clear = foreign "wlr_renderer_clear"
       (wlr_renderer_p @-> ptr float @-> returning void)
-
-  let wlr_render_with_matrix = foreign "wlr_render_with_matrix"
-      (wlr_renderer_p @-> wlr_texture_p @-> wlr_matrix_p @-> float @->
-       returning bool)
 
   (* wlr_backend *)
 
@@ -173,7 +168,7 @@ struct
       (wlr_backend_p @-> returning wlr_renderer_p)
 
   let wlr_backend_autocreate = foreign "wlr_backend_autocreate"
-      (wl_display_p @-> returning wlr_backend_p)
+      (wl_display_p @-> ptr void (* FIXME *) @-> returning wlr_backend_p)
 
   let wlr_backend_start = foreign "wlr_backend_start"
       (wlr_backend_p @-> returning bool)
@@ -187,65 +182,6 @@ struct
 
   let wlr_compositor_create = foreign "wlr_compositor_create"
       (wl_display_p @-> wlr_renderer_p @-> returning wlr_compositor_p)
-
-  let wlr_compositor_destroy = foreign "wlr_compositor_destroy"
-      (wlr_compositor_p @-> returning void)
-
-  (* wlr_xdg_shell_v6 *)
-
-  let wlr_xdg_shell_v6_p = ptr Xdg_shell_v6.t
-
-  let wlr_xdg_shell_v6_create = foreign "wlr_xdg_shell_v6_create"
-      (wl_display_p @-> returning wlr_xdg_shell_v6_p)
-
-  let wlr_xdg_shell_v6_destroy = foreign "wlr_xdg_shell_v6_destroy"
-      (wlr_xdg_shell_v6_p @-> returning void)
-
-  (* wlr_gamma_control *)
-
-  (* TODO *)
-  let wlr_gamma_control_manager = ptr void
-
-  let wlr_gamma_control_manager_create = foreign "wlr_gamma_control_manager_create"
-      (wl_display_p @-> returning wlr_gamma_control_manager)
-
-  let wlr_gamma_control_manager_destroy = foreign "wlr_gamma_control_manager_destroy"
-      (wlr_gamma_control_manager @-> returning void)
-
-  (* wlr_screenshoter *)
-
-  (* TODO *)
-  let wlr_screenshooter_p = ptr void
-
-  let wlr_screenshooter_create = foreign "wlr_screenshooter_create"
-      (wl_display_p @-> returning wlr_screenshooter_p)
-
-  let wlr_screenshooter_destroy = foreign "wlr_screenshooter_destroy"
-      (wlr_screenshooter_p @-> returning void)
-
-  (* wlr_primary_selection *)
-
-  (* TODO *)
-  let wlr_primary_selection_device_manager_p = ptr void
-
-  let wlr_primary_selection_device_manager_create =
-    foreign "wlr_primary_selection_device_manager_create"
-      (wl_display_p @-> returning wlr_primary_selection_device_manager_p)
-
-  let wlr_primary_selection_device_manager_destroy =
-    foreign "wlr_primary_selection_device_manager_destroy"
-      (wlr_primary_selection_device_manager_p @-> returning void)
-
-  (* wlr_idle *)
-
-  (* TODO *)
-  let wlr_idle_p = ptr void
-
-  let wlr_idle_create = foreign "wlr_idle_create"
-      (wl_display_p @-> returning wlr_idle_p)
-
-  let wlr_idle_destroy = foreign "wlr_idle_destroy"
-      (wlr_idle_p @-> returning void)
 
   (* wlr_log *)
 
