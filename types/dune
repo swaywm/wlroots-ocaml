@@ -30,5 +30,6 @@
   $(< ../config/wlroots-ccopt) $(< ../config/wlroots-cclib) \
   $(< ../config/wayland-server-ccopt) $(< ../config/wayland-server-cclib) \
   $(< ../config/pixman-1-ccopt) $(< ../config/pixman-1-cclib) \
+  -DWLR_USE_UNSTABLE \
   -I `dirname %{lib:ctypes:ctypes_cstubs_internals.h}` \
   -I %{ocaml_where} -o %{targets}")))
