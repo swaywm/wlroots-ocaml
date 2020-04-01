@@ -109,10 +109,33 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Key_state = struct
+    type t = Released | Pressed
+
+    let _RELEASED = constant "WLR_KEY_RELEASED" int64_t
+    let _PRESSED = constant "WLR_KEY_PRESSED" int64_t
+
+    let t : t typ = enum "wlr_key_state" [
+      Released, _RELEASED;
+      Pressed, _PRESSED;
+    ]
+  end
+
+  module Event_keyboard_key = struct
+    type t = [`event_keyboard_key] Ctypes.structure
+    let t : t typ = structure "wlr_event_keyboard_key"
+    let time_msec = field t "time_msec" uint32_t
+    let keycode = field t "keycode" int
+    let update_state = field t "update_state" bool
+    let state = field t "state" Key_state.t
+  end
+
   module Keyboard = struct
     type t = [`keyboard] Ctypes.structure
     let t : t typ = structure "wlr_keyboard"
 
+    let xkb_state = field t "xkb_state" (lift_typ Xkbcommon.State.t)
+    let events_key = field t "events.key" Wl_signal.t
     let () = seal t
   end
 

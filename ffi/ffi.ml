@@ -94,6 +94,9 @@ struct
   let wl_display_init_shm = foreign "wl_display_init_shm"
       (wl_display_p @-> returning int)
 
+  let wl_display_terminate = foreign "wl_display_terminate"
+      (wl_display_p @-> returning void)
+
   (* wl_resource *)
 
   let wl_resource_p = ptr Wl_resource.t
@@ -159,6 +162,13 @@ struct
 
   let wlr_renderer_clear = foreign "wlr_renderer_clear"
       (wlr_renderer_p @-> ptr float @-> returning void)
+
+  (* wlr_keyboard *)
+
+  let wlr_keyboard_p = ptr Keyboard.t
+
+  let wlr_keyboard_set_keymap = foreign "wlr_keyboard_set_keymap"
+      (wlr_keyboard_p @-> Xkbcommon.Keymap.t @-> returning bool)
 
   (* wlr_backend *)
 

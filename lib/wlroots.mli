@@ -32,6 +32,7 @@ module Wl : sig
     val destroy : t -> unit
     val add_socket_auto : t -> string
     val init_shm : t -> int
+    val terminate : t -> unit
   end
 
   module Resource : sig
@@ -113,6 +114,22 @@ end
 module Keyboard : sig
   type t
   include Comparable0 with type t := t
+
+  type key_state = Released | Pressed
+
+  module Event_key : sig
+    type t
+    include Comparable0 with type t := t
+
+    val time_msec : t -> Unsigned.uint32
+    val keycode : t -> int
+    val update_state : t -> bool
+    val state : t -> key_state
+  end
+
+  val xkb_state : t -> Xkbcommon.State.t
+  val signal_key : t -> Event_key.t Wl.Signal.t
+  val set_keymap : t -> Xkbcommon.Keymap.t -> bool
 end
 
 module Pointer : sig

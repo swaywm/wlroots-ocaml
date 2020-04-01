@@ -3,7 +3,7 @@
   (name wlroots_types_f)
   (public_name wlroots.types_f)
   (modules types)
-  (libraries ctypes ctypes.stubs ctypes.foreign))
+  (libraries ctypes ctypes.stubs ctypes.foreign xkbcommon))
 
 ; Stubgen, phase 1
 (executables

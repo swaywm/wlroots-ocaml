@@ -6,7 +6,8 @@
   (libraries wlroots_types_f
              wlroots_common
              ctypes ctypes.stubs
-             unix-time.unix mtime.clock.os))
+             unix-time.unix mtime.clock.os
+             xkbcommon))
 
 (executables
   (names stubgen)
