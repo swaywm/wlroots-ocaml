@@ -27,6 +27,9 @@ let state = ref {
   new_input = Wl.Listener.create ();
 }
 
+let fail msg () =
+  print_endline msg; exit 1
+
 let output_frame_notify _ output =
   let st = !state in
   let now = Mtime_clock.now () in
@@ -95,21 +98,11 @@ let new_input_notify display _ (input: Input_device.t) =
       variant = Sys.getenv_opt "XKB_DEFAULT_VARIANT";
       options = Sys.getenv_opt "XKB_DEFAULT_OPTIONS";
     } in
-    let context = match Xkbcommon.Context.create () with
-      | None ->
-        print_endline "Failed to create XKB context";
-        exit 1
-      | Some ctx -> ctx
-    in
-    let keymap = match Xkbcommon.Keymap.new_from_names context rules with
-      | None ->
-        print_endline "Failed to create XKB keymap";
-        exit 1
-      | Some keymap -> keymap
-    in
-    ignore (Keyboard.set_keymap keyboard keymap : bool);
-    Xkbcommon.Keymap.unref keymap;
-    Xkbcommon.Context.unref context
+    Xkbcommon.Context.with_new (fun context ->
+      Xkbcommon.Keymap.with_new_from_names context rules (fun keymap ->
+        ignore (Keyboard.set_keymap keyboard keymap : bool)
+      ) ~fail:(fail "Failed to create XKB keymap")
+    ) ~fail:(fail "Failed to create XKB context")
   | _ ->
     ()
 
