@@ -5,12 +5,17 @@ homepage: "https://github.com/swaywm/wlroots-ocaml"
 bug-reports: "https://github.com/swaywm/wlroots-ocaml/issues"
 depends: [
   "ocaml" {>= "4.04.1"}
+  "xkbcommon"
   "ctypes"
   "ctypes-foreign"
   "dune"
   "unix-time"
   "mtime"
-  "base"
-  "stdio"
+  "base" { build }
+  "stdio" { build }
+  "tgls" { with-test }
 ]
-build: ["dune" "build" "-p" name "-j" jobs "@install"]
+build: [
+  ["dune" "build" "-p" name "-j" jobs "@install"]
+  ["dune" "build" "-p" name "-j" jobs "@examples"] { with-test }
+]

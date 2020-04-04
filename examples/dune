@@ -1,3 +1,7 @@
 (executables
-  (names simple)
-  (libraries wlroots tgls.tgl3 mtime.clock.os xkbcommon))
+ (names simple)
+ (libraries wlroots tgls.tgl3 mtime.clock.os xkbcommon))
+
+(alias
+ (name examples)
+ (deps simple.exe))

@@ -27,4 +27,4 @@
                     (:include ../config/wayland-server-cclib.sexp)
                     (:include ../config/pixman-1-cclib.sexp))
   (libraries wlroots_types_f wlroots_ffi_f wlroots_common ctypes.stubs ctypes
-             unix-time.unix mtime.clock.os))
+             unix-time.unix mtime.clock.os xkbcommon))

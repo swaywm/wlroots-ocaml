@@ -4,10 +4,8 @@ EXAMPLES := $(patsubst %,examples/%.exe,$(EXAMPLES))
 default:
 	dune build @install
 
-examples: $(EXAMPLES)
-
-$(EXAMPLES):
-	dune build $@
+examples:
+	dune build @examples
 
 clean:
 	rm -rf _build
