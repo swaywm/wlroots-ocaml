@@ -104,6 +104,7 @@ module Display = struct
 
   let run = Bindings.wl_display_run
   let destroy = Bindings.wl_display_destroy
+  let destroy_clients = Bindings.wl_display_destroy_clients
   let add_socket_auto = Bindings.wl_display_add_socket_auto
   let init_shm = Bindings.wl_display_init_shm
   let terminate = Bindings.wl_display_terminate

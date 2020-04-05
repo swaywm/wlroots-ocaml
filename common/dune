@@ -2,3 +2,20 @@
  (name wlroots_common)
  (public_name wlroots.common)
  (libraries ctypes))
+
+;; xdg-shell-protocol.h
+(rule
+ (targets "xdg-shell-protocol.h")
+ (deps ../config/wayland-scanner-bin ../config/wayland-protocols-dir)
+ (action (bash "$(< ../config/wayland-scanner-bin) server-header \
+  $(< ../config/wayland-protocols-dir)/stable/xdg-shell/xdg-shell.xml \
+  %{targets}")))
+
+;; xdg-shell-protocol.c
+;;; this doesn't seem to be useful for now?
+(rule
+ (targets "xdg-shell-protocol.c")
+ (deps ../config/wayland-scanner-bin ../config/wayland-protocols-dir)
+ (action (bash "$(< ../config/wayland-scanner-bin) private-code \
+  $(< ../config/wayland-protocols-dir)/stable/xdg-shell/xdg-shell.xml \
+  %{targets}")))

@@ -49,3 +49,19 @@ let () =
       package = "wlroots" };
 
   ] |> List.iter ~f:discover
+
+let pkg_config_var ~var pkg =
+  (* hack: this should be supported in configurator directly.
+     see dune issue #3332 *)
+  let cin = Unix.open_process_in
+      (Printf.sprintf "pkg-config --variable=%s %s" var pkg) in
+  let res = In_channel.input_all cin in
+  let _ = Unix.close_process_in cin in
+  res
+
+let () =
+  Out_channel.write_all "wayland-protocols-dir"
+    ~data:(pkg_config_var ~var:"pkgdatadir" "wayland-protocols");
+  Out_channel.write_all "wayland-scanner-bin"
+    ~data:(pkg_config_var ~var:"wayland_scanner" "wayland-scanner");
+  ()

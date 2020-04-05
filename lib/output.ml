@@ -59,3 +59,10 @@ let attach_render (output : t): bool =
 
 let commit (output : t): bool =
   Bindings.wlr_output_commit output
+
+module Layout = struct
+  type t = Types.Output_layout.t ptr
+  include Ptr
+
+  let create = Bindings.wlr_output_layout_create
+end

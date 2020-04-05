@@ -16,3 +16,5 @@ let end_ (renderer : t) =
 let clear (renderer : t) ((c1,c2,c3,c4) : float * float * float * float) =
   let color_arr = CArray.of_list float [c1;c2;c3;c4] in
   Bindings.wlr_renderer_clear renderer (CArray.start color_arr)
+
+let init_wl_display = Bindings.wlr_renderer_init_wl_display

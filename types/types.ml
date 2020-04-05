@@ -109,6 +109,12 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Output_layout = struct
+    type t = [`output_layout] Ctypes.structure
+    let t : t typ = structure "wlr_output_layout"
+    let () = seal t
+  end
+
   module Key_state = struct
     type t = Released | Pressed
 
@@ -142,6 +148,34 @@ module Make (S : Cstubs_structs.TYPE) = struct
   module Pointer = struct
     type t = [`pointer] Ctypes.structure
     let t : t typ = structure "wlr_pointer"
+
+    let () = seal t
+  end
+
+  module Event_pointer_motion = struct
+    type t = [`event_pointer_motion] Ctypes.structure
+    let t : t typ = structure "wlr_event_pointer_motion"
+
+    let () = seal t
+  end
+
+  module Event_pointer_motion_absolute = struct
+    type t = [`event_pointer_motion_absolute] Ctypes.structure
+    let t : t typ = structure "wlr_event_pointer_motion_absolute"
+
+    let () = seal t
+  end
+
+  module Event_pointer_button = struct
+    type t = [`event_pointer_button] Ctypes.structure
+    let t : t typ = structure "wlr_event_pointer_button"
+
+    let () = seal t
+  end
+
+  module Event_pointer_axis = struct
+    type t = [`event_pointer_axis] Ctypes.structure
+    let t : t typ = structure "wlr_event_pointer_axis"
 
     let () = seal t
   end
@@ -228,11 +262,67 @@ module Make (S : Cstubs_structs.TYPE) = struct
             returning (ptr Renderer.t)))
   end
 
+  module Data_device_manager = struct
+    type t = [`data_device] Ctypes.structure
+    let t : t typ = structure "wlr_data_device_manager"
+
+    let () = seal t
+  end
+
   module Compositor = struct
     type t = [`compositor] Ctypes.structure
     let t : t typ = structure "wlr_compositor"
 
     (* TODO *)
+    let () = seal t
+  end
+
+  module Xdg_surface = struct
+    type t = [`xdg_surface] Ctypes.structure
+    let t : t typ = structure "wlr_xdg_surface"
+
+    let () = seal t
+  end
+
+  module Xdg_shell = struct
+    type t = [`xdg_shell] Ctypes.structure
+    let t : t typ = structure "wlr_xdg_shell"
+
+    let events_new_surface = field t "events.new_surface" Wl_signal.t
+    let events_destroy = field t "events.destroy" Wl_signal.t
+    let () = seal t
+  end
+
+  module Cursor = struct
+    type t = [`cursor] Ctypes.structure
+    let t : t typ = structure "wlr_cursor"
+
+    let events_motion = field t "events.motion" Wl_signal.t
+    let events_motion_absolute = field t "events.motion_absolute" Wl_signal.t
+    let events_button = field t "events.button" Wl_signal.t
+    let events_axis = field t "events.axis" Wl_signal.t
+    let events_frame = field t "events.frame" Wl_signal.t
+    let () = seal t
+  end
+
+  module Xcursor_manager = struct
+    type t = [`xcursor_manager] Ctypes.structure
+    let t : t typ = structure "wlr_xcursor_manager"
+    let () = seal t
+  end
+
+  module Seat = struct
+    type t = [`seat] Ctypes.structure
+    let t : t typ = structure "wlr_seat"
+
+    let events_request_set_cursor =
+      field t "events.request_set_cursor" Wl_signal.t
+    let () = seal t
+  end
+
+  module Seat_pointer_request_set_cursor_event = struct
+    type t = [`seat_pointer_request_set_cursor_event] Ctypes.structure
+    let t : t typ = structure "wlr_seat_pointer_request_set_cursor_event"
     let () = seal t
   end
 

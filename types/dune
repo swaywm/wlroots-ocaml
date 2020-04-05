@@ -19,6 +19,7 @@
 (rule
   (targets types_stubgen.exe)
   (deps (:types_stubgen ./types_stubgen.c)
+        ../common/xdg-shell-protocol.h
         ../config/wlroots-ccopt
         ../config/wlroots-cclib
         ../config/wayland-server-ccopt
@@ -32,4 +33,5 @@
   $(< ../config/pixman-1-ccopt) $(< ../config/pixman-1-cclib) \
   -DWLR_USE_UNSTABLE \
   -I `dirname %{lib:ctypes:ctypes_cstubs_internals.h}` \
+  -I ../common \
   -I %{ocaml_where} -o %{targets}")))

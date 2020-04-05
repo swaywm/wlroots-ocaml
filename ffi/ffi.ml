@@ -88,8 +88,11 @@ struct
   let wl_display_destroy = foreign "wl_display_destroy"
       (wl_display_p @-> returning void)
 
+  let wl_display_destroy_clients = foreign "wl_display_destroy_clients"
+      (wl_display_p @-> returning void)
+
   let wl_display_add_socket_auto = foreign "wl_display_add_socket_auto"
-      (wl_display_p @-> returning string)
+      (wl_display_p @-> returning string_opt)
 
   let wl_display_init_shm = foreign "wl_display_init_shm"
       (wl_display_p @-> returning int)
@@ -120,6 +123,13 @@ struct
 
   let wlr_output_commit = foreign "wlr_output_commit"
       (wlr_output_p @-> returning bool)
+
+  (* wlr_output_layout *)
+
+  let wlr_output_layout_p = ptr Output_layout.t
+
+  let wlr_output_layout_create = foreign "wlr_output_layout_create"
+      (void @-> returning wlr_output_layout_p)
 
   (* wlr_box *)
 
@@ -163,6 +173,9 @@ struct
   let wlr_renderer_clear = foreign "wlr_renderer_clear"
       (wlr_renderer_p @-> ptr float @-> returning void)
 
+  let wlr_renderer_init_wl_display = foreign "wlr_renderer_init_wl_display"
+      (wlr_renderer_p @-> wl_display_p @-> returning bool)
+
   (* wlr_keyboard *)
 
   let wlr_keyboard_p = ptr Keyboard.t
@@ -186,12 +199,54 @@ struct
   let wlr_backend_destroy = foreign "wlr_backend_destroy"
       (wlr_backend_p @-> returning void)
 
+  (* wlr_data_device_manager *)
+
+  let wlr_data_device_manager_p = ptr Data_device_manager.t
+
+  let wlr_data_device_manager_create = foreign "wlr_data_device_manager_create"
+      (wl_display_p @-> returning wlr_data_device_manager_p)
+
   (* wlr_compositor *)
 
   let wlr_compositor_p = ptr Compositor.t
 
   let wlr_compositor_create = foreign "wlr_compositor_create"
       (wl_display_p @-> wlr_renderer_p @-> returning wlr_compositor_p)
+
+  (* wlr_xdg_shell *)
+
+  let wlr_xdg_shell_p = ptr Xdg_shell.t
+
+  let wlr_xdg_shell_create = foreign "wlr_xdg_shell_create"
+      (wl_display_p @-> returning wlr_xdg_shell_p)
+
+  (* wlr_cursor *)
+
+  let wlr_cursor_p = ptr Cursor.t
+
+  let wlr_cursor_create = foreign "wlr_cursor_create"
+      (void @-> returning wlr_cursor_p)
+
+  let wlr_cursor_attach_output_layout =
+    foreign "wlr_cursor_attach_output_layout"
+      (wlr_cursor_p @-> wlr_output_layout_p @-> returning void)
+
+  (* wlr_xcursor_manager *)
+
+  let wlr_xcursor_manager_p = ptr Xcursor_manager.t
+
+  let wlr_xcursor_manager_create = foreign "wlr_xcursor_manager_create"
+      (string_opt @-> int @-> returning wlr_xcursor_manager_p)
+
+  let wlr_xcursor_manager_load = foreign "wlr_xcursor_manager_load"
+      (wlr_xcursor_manager_p @-> float @-> returning int)
+
+  (* wlr_seat *)
+
+  let wlr_seat_p = ptr Seat.t
+
+  let wlr_seat_create = foreign "wlr_seat_create"
+      (wl_display_p @-> string @-> returning wlr_seat_p)
 
   (* wlr_log *)
 

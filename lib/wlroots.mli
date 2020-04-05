@@ -30,7 +30,8 @@ module Wl : sig
     val get_event_loop : t -> Event_loop.t
     val run : t -> unit
     val destroy : t -> unit
-    val add_socket_auto : t -> string
+    val destroy_clients : t -> unit
+    val add_socket_auto : t -> string option
     val init_shm : t -> int
     val terminate : t -> unit
   end
@@ -109,6 +110,13 @@ module Output : sig
 
   val signal_frame : t -> t Wl.Signal.t
   val signal_destroy : t -> t Wl.Signal.t
+
+  module Layout : sig
+    type t
+    include Comparable0 with type t := t
+
+    val create : unit -> t
+  end
 end
 
 module Keyboard : sig
@@ -135,6 +143,26 @@ end
 module Pointer : sig
   type t
   include Comparable0 with type t := t
+
+  module Event_motion : sig
+    type t
+    include Comparable0 with type t := t
+  end
+
+  module Event_motion_absolute : sig
+    type t
+    include Comparable0 with type t := t
+  end
+
+  module Event_button : sig
+    type t
+    include Comparable0 with type t := t 
+  end
+
+  module Event_axis : sig
+    type t
+    include Comparable0 with type t := t
+  end
 end
 
 module Touch : sig
@@ -178,6 +206,7 @@ module Renderer : sig
   val begin_ : t -> width:int -> height:int -> unit
   val end_ : t -> unit
   val clear : t -> float * float * float * float -> unit
+  val init_wl_display : t -> Wl.Display.t -> bool
 end
 
 module Backend : sig
@@ -188,15 +217,76 @@ module Backend : sig
   val start : t -> bool
   val destroy : t -> unit
 
+  val get_renderer : t -> Renderer.t
+
   val signal_new_output : t -> Output.t Wl.Signal.t
   val signal_new_input : t -> Input_device.t Wl.Signal.t
   val signal_destroy : t -> t Wl.Signal.t
 end
 
+module Data_device : sig
+  module Manager : sig
+    type t
+    include Comparable0 with type t := t
+
+    val create : Wl.Display.t -> t
+  end
+end
+
 module Compositor : sig
   type t
+  include Comparable0 with type t := t
 
   val create : Wl.Display.t -> Renderer.t -> t
+end
+
+module Xdg_shell : sig
+  type t
+  include Comparable0 with type t := t
+
+  module Surface : sig
+    type t
+    include Comparable0 with type t := t
+  end
+
+  val create : Wl.Display.t -> t
+  val signal_new_surface : t -> Surface.t Wl.Signal.t
+end
+
+module Cursor : sig
+  type t
+  include Comparable0 with type t := t
+
+  val create : unit -> t
+  val attach_output_layout : t -> Output.Layout.t -> unit
+
+  val signal_motion : t -> Pointer.Event_motion.t Wl.Signal.t
+  val signal_motion_absolute : t -> Pointer.Event_motion_absolute.t Wl.Signal.t
+  val signal_button : t -> Pointer.Event_button.t Wl.Signal.t
+  val signal_axis : t -> Pointer.Event_axis.t Wl.Signal.t
+  val signal_frame : t -> unit (* ? *) Wl.Signal.t
+end
+
+module Xcursor_manager : sig
+  type t
+  include Comparable0 with type t := t
+
+  val create : string option -> int -> t
+  val load : t -> float -> int
+end
+
+module Seat : sig
+  type t
+  include Comparable0 with type t := t
+
+  module Pointer_request_set_cursor_event : sig
+    type t
+    include Comparable0 with type t := t
+  end
+
+  val create : Wl.Display.t -> string -> t
+  val signal_request_set_cursor :
+    t -> Pointer_request_set_cursor_event.t Wl.Signal.t
 end
 
 module Log : sig

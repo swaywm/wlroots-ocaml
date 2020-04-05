@@ -1,0 +1,7 @@
+(executable
+ (name tinywl)
+ (libraries wlroots xkbcommon tgls.tgl3))
+
+(alias
+ (name examples)
+ (deps tinywl.exe))
