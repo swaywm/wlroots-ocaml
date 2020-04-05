@@ -4,7 +4,7 @@
   (modules generated_types ffi)
   (flags (:standard -w -9))
   (libraries wlroots_types_f
-             wlroots_common
+             wlroots_config wlroots_common
              ctypes ctypes.stubs
              unix-time.unix mtime.clock.os
              xkbcommon))

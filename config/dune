@@ -1,7 +1,8 @@
 (executables
   (names discover)
   (flags (:standard -safe-string))
-  (libraries base stdio dune.configurator))
+  (libraries base stdio dune.configurator)
+  (modules discover))
 
 (rule
   (targets wlroots-ccopt.sexp
@@ -15,6 +16,13 @@
            pixman-1-ccopt.sexp
            pixman-1-cclib.sexp
            pixman-1-ccopt
-           pixman-1-cclib)
+           pixman-1-cclib
+           wayland-protocols-dir
+           wayland-scanner-bin)
   (deps    (:discover discover.exe))
   (action  (run %{discover})))
+
+(library
+ (name wlroots_config)
+ (public_name wlroots.config)
+ (modules wlroots_config))

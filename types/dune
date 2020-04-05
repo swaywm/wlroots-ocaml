@@ -9,7 +9,7 @@
 (executables
   (names stubgen)
   (modules stubgen)
-  (libraries wlroots_types_f ctypes.stubs ctypes))
+  (libraries wlroots_config wlroots_types_f ctypes.stubs ctypes))
 
 ; C file built by stubgen
 (rule (with-stdout-to "types_stubgen.c" (run "./stubgen.exe")))
