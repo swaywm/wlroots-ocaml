@@ -25,6 +25,11 @@ Then, to directly install wlroots-ocaml with opam, use:
 ```
 
 If you want to hack on the library instead, clone the repository, and install
-its dependencies with `opam install -t --deps-only .`.
+its dependencies with:
+
+```
+opam install -t --deps-only .
+```
+
 Then, you can use `make` to build the library, and `make examples` to build the
 example programs.
