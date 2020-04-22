@@ -2,20 +2,44 @@ open Wlroots
 
 type view
   
-type st = {
+type tinywl_output = {
+  output : Output.t;
+
+  frame : Wl.Listener.t;
+}
+
+type tinywl_server = {
   display : Wl.Display.t;
   backend : Backend.t;
   renderer : Renderer.t;
-  output_layout : Output.Layout.t;
-  mutable outputs : Output.t list;
+  output_layout : Output_layout.t;
+  mutable outputs : tinywl_output list;
   mutable views : view list;
   mutable keyboards : Keyboard.t list;
 
   new_output : Wl.Listener.t;
 }
 
-let server_new_output _st _ _ =
+let output_frame _st _ _ =
   failwith "todo"
+
+let server_new_output st _ output =
+  let output_ok =
+    match Output.preferred_mode output with
+    | Some mode ->
+      Output.set_mode output mode;
+      Output.enable output true;
+      Output.commit output
+    | None -> true
+  in
+  if output_ok then begin
+    let o = { output; frame = Wl.Listener.create () } in
+    Wl.Signal.add (Output.signal_frame output) o.frame (output_frame st);
+    st.outputs <- o :: st.outputs;
+
+    Output_layout.add_auto st.output_layout output;
+    Output.create_global output;
+  end
 
 let server_new_xdg_surface _st _ _ =
   failwith "todo"
@@ -60,7 +84,7 @@ let () =
   let _compositor = Compositor.create display renderer in
   let _data_manager = Data_device.Manager.create display in
 
-  let output_layout = Output.Layout.create () in
+  let output_layout = Output_layout.create () in
 
   let xdg_shell = Xdg_shell.create display in
 

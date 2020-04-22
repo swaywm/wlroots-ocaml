@@ -1,5 +1,6 @@
 include Event
 
+module Output_layout = Output_layout
 module Seat = Seat
 module Xcursor_manager = Xcursor_manager
 module Cursor = Cursor

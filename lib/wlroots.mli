@@ -100,23 +100,24 @@ module Output : sig
   (* Setting an output mode *)
   val modes : t -> Mode.t list
   val set_mode : t -> Mode.t -> unit
-  val best_mode : t -> Mode.t option
-  val set_best_mode : t -> unit
+  val preferred_mode : t -> Mode.t option
 
   val transform_matrix : t -> Matrix.t
   val create_global : t -> unit
   val attach_render : t -> bool
   val commit : t -> bool
+  val enable : t -> bool -> unit
 
   val signal_frame : t -> t Wl.Signal.t
   val signal_destroy : t -> t Wl.Signal.t
+end
 
-  module Layout : sig
-    type t
-    include Comparable0 with type t := t
+module Output_layout : sig
+  type t
+  include Comparable0 with type t := t
 
-    val create : unit -> t
-  end
+  val create : unit -> t
+  val add_auto : t -> Output.t -> unit
 end
 
 module Keyboard : sig
@@ -258,7 +259,7 @@ module Cursor : sig
   include Comparable0 with type t := t
 
   val create : unit -> t
-  val attach_output_layout : t -> Output.Layout.t -> unit
+  val attach_output_layout : t -> Output_layout.t -> unit
 
   val signal_motion : t -> Pointer.Event_motion.t Wl.Signal.t
   val signal_motion_absolute : t -> Pointer.Event_motion_absolute.t Wl.Signal.t

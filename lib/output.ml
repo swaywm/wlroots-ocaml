@@ -38,17 +38,9 @@ let transform_matrix (output : t) : Matrix.t =
 let set_mode (output : t) (mode : Mode.t): unit =
   Bindings.wlr_output_set_mode output mode
 
-let best_mode (output : t): Mode.t option =
-  match modes output with
-  | [] -> None
-  | mode :: _ -> Some mode
-
-let set_best_mode (output : t) =
-  match best_mode output with
-  | None -> ()
-  | Some mode ->
-    (* TODO log the mode set *)
-    set_mode output mode |> ignore
+let preferred_mode output =
+  let mode = Bindings.wlr_output_preferred_mode output in
+  if is_null mode then None else Some mode
 
 let create_global (output : t) =
   Bindings.wlr_output_create_global output
@@ -60,9 +52,4 @@ let attach_render (output : t): bool =
 let commit (output : t): bool =
   Bindings.wlr_output_commit output
 
-module Layout = struct
-  type t = Types.Output_layout.t ptr
-  include Ptr
-
-  let create = Bindings.wlr_output_layout_create
-end
+let enable = Bindings.wlr_output_enable

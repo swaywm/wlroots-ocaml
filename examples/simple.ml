@@ -59,7 +59,10 @@ let output_remove_notify output_handles _ _output =
 let new_output_notify _ output =
   let o = { frame = Wl.Listener.create ();
             destroy = Wl.Listener.create (); } in
-  Output.set_best_mode output;
+  begin match Output.modes output with
+    | mode :: _ -> Output.set_mode output mode
+    | [] -> ()
+  end;
   Wl.Signal.add (Output.signal_frame output) o.frame output_frame_notify;
   Wl.Signal.add (Output.signal_destroy output) o.destroy
     (output_remove_notify o);

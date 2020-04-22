@@ -124,12 +124,21 @@ struct
   let wlr_output_commit = foreign "wlr_output_commit"
       (wlr_output_p @-> returning bool)
 
+  let wlr_output_preferred_mode = foreign "wlr_output_preferred_mode"
+      (wlr_output_p @-> returning wlr_output_mode_p)
+
+  let wlr_output_enable = foreign "wlr_output_enable"
+      (wlr_output_p @-> bool @-> returning void)
+
   (* wlr_output_layout *)
 
   let wlr_output_layout_p = ptr Output_layout.t
 
   let wlr_output_layout_create = foreign "wlr_output_layout_create"
       (void @-> returning wlr_output_layout_p)
+
+  let wlr_output_layout_add_auto = foreign "wlr_output_layout_add_auto"
+      (wlr_output_layout_p @-> wlr_output_p @-> returning void)
 
   (* wlr_box *)
 
