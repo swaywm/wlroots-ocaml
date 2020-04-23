@@ -20,3 +20,7 @@ let signal_request_set_cursor (seat: t) : _ Wl.Signal.t = {
   c = seat |-> Types.Seat.events_request_set_cursor;
   typ = Pointer_request_set_cursor_event.t
 }
+
+let set_capabilities seat caps =
+  Bindings.wlr_seat_set_capabilities
+    seat (coerce Wl.Seat_capability.t uint64_t caps)

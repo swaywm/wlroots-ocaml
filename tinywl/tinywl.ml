@@ -13,6 +13,7 @@ type tinywl_server = {
   backend : Backend.t;
   renderer : Renderer.t;
   output_layout : Output_layout.t;
+  seat : Seat.t;
   mutable outputs : tinywl_output list;
   mutable views : view list;
   mutable keyboards : Keyboard.t list;
@@ -59,8 +60,29 @@ let server_cursor_axis _st _ _ =
 let server_cursor_frame _st _ _ =
   failwith "todo"
 
-let server_new_input _st _ _ =
+let server_new_keyboard _st (_keyboard: Keyboard.t) =
   failwith "todo"
+
+let server_new_pointer _st (_pointer: Pointer.t) =
+  failwith "todo"
+
+let server_new_input st _ (device: Input_device.t) =
+  begin match Input_device.typ device with
+  | Input_device.Keyboard keyboard ->
+    server_new_keyboard st keyboard
+  | Input_device.Pointer pointer ->
+    server_new_pointer st pointer
+  | _ ->
+    ()
+  end;
+
+  let caps =
+    Wl.Seat_capability.Pointer ::
+    (match st.keyboards with
+     | [] -> []
+     | _ -> [Wl.Seat_capability.Keyboard])
+  in
+  Seat.set_capabilities st.seat caps
 
 let server_request_cursor _st _ _ =
   failwith "todo"
@@ -105,7 +127,7 @@ let () =
   let cursor_frame = Wl.Listener.create () in
   let new_input = Wl.Listener.create () in
   let request_cursor = Wl.Listener.create () in
-  let st = { display; backend; renderer; output_layout; new_output;
+  let st = { display; backend; renderer; output_layout; new_output; seat;
              outputs = []; views = []; keyboards = [] } in
 
   Wl.Signal.add (Backend.signal_new_output backend) new_output

@@ -257,6 +257,9 @@ struct
   let wlr_seat_create = foreign "wlr_seat_create"
       (wl_display_p @-> string @-> returning wlr_seat_p)
 
+  let wlr_seat_set_capabilities = foreign "wlr_seat_set_capabilities"
+      (wlr_seat_p @-> Wl_seat_capability.t @-> returning void)
+
   (* wlr_log *)
 
   (* TODO *)

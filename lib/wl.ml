@@ -119,3 +119,16 @@ module Output_transform = struct
   type t = Types.Wl_output_transform.t
   include Poly
 end
+
+module Seat_capability = struct
+  type cap = Pointer | Keyboard | Touch
+  type t = cap list
+  include Poly
+
+  let t : cap list typ =
+    bitwise_enum Types.Wl_seat_capability.([
+      Pointer, _WL_SEAT_CAPABILITY_POINTER;
+      Keyboard, _WL_SEAT_CAPABILITY_KEYBOARD;
+      Touch, _WL_SEAT_CAPABILITY_TOUCH;
+    ])
+end

@@ -45,6 +45,12 @@ module Wl : sig
     type t
     include Comparable0 with type t := t
   end
+
+  module Seat_capability : sig
+    type cap = Pointer | Keyboard | Touch
+    type t = cap list
+    include Comparable0 with type t := t
+  end
 end
 
 module Texture : sig
@@ -288,6 +294,7 @@ module Seat : sig
   val create : Wl.Display.t -> string -> t
   val signal_request_set_cursor :
     t -> Pointer_request_set_cursor_event.t Wl.Signal.t
+  val set_capabilities : t -> Wl.Seat_capability.t -> unit
 end
 
 module Log : sig

@@ -45,6 +45,14 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = int64_t
   end
 
+  module Wl_seat_capability = struct
+    type t = Unsigned.uint64
+    let t : t typ = uint64_t
+    let _WL_SEAT_CAPABILITY_POINTER = constant "WL_SEAT_CAPABILITY_POINTER" uint64_t
+    let _WL_SEAT_CAPABILITY_KEYBOARD = constant "WL_SEAT_CAPABILITY_KEYBOARD" uint64_t
+    let _WL_SEAT_CAPABILITY_TOUCH = constant "WL_SEAT_CAPABILITY_TOUCH" uint64_t
+  end
+
   module Renderer = struct
     type t = [`renderer] Ctypes.structure
     let t : t typ = structure "wlr_renderer"
