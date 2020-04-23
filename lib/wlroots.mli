@@ -2,13 +2,11 @@ open Wlroots_common.Sigs
 
 module Wl : sig
   module Event_loop : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   module Listener : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
 
     val create : unit -> t
     val state : t -> [`attached | `detached]
@@ -16,15 +14,13 @@ module Wl : sig
   end
 
   module Signal : sig
-    type 'a t
-    include Comparable1 with type 'a t := 'a t
+    include Comparable1
 
     val add : 'a t -> Listener.t -> (Listener.t -> 'a -> unit) -> unit
   end
 
   module Display : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
 
     val create : unit -> t
     val get_event_loop : t -> Event_loop.t
@@ -37,37 +33,31 @@ module Wl : sig
   end
 
   module Resource : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   module Output_transform : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   module Seat_capability : sig
     type cap = Pointer | Keyboard | Touch
-    type t = cap list
-    include Comparable0 with type t := t
+    include Comparable0 with type t = cap list
   end
 end
 
 module Texture : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 end
 
 module Surface : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val from_resource : Wl.Resource.t -> t
   val has_buffer : t -> bool
 
   module State : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
     val width : t -> int
     val height : t -> int
     val transform : t -> Wl.Output_transform.t
@@ -84,18 +74,15 @@ module Box : sig
 end
 
 module Matrix : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
   val project_box : Box.t -> Wl.Output_transform.t -> rotation:float -> t -> t
 end
 
 module Output : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   module Mode : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
 
     val width : t -> int32
     val height : t -> int32
@@ -119,22 +106,19 @@ module Output : sig
 end
 
 module Output_layout : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val create : unit -> t
   val add_auto : t -> Output.t -> unit
 end
 
 module Keyboard : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   type key_state = Released | Pressed
 
   module Event_key : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
 
     val time_msec : t -> Unsigned.uint32
     val keycode : t -> int
@@ -148,48 +132,39 @@ module Keyboard : sig
 end
 
 module Pointer : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   module Event_motion : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   module Event_motion_absolute : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   module Event_button : sig
-    type t
-    include Comparable0 with type t := t 
+    include Comparable0
   end
 
   module Event_axis : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 end
 
 module Touch : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 end
 
 module Tablet_tool : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 end
 
 module Tablet_pad : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 end
 
 module Input_device : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   type typ =
     | Keyboard of Keyboard.t
@@ -207,8 +182,7 @@ module Input_device : sig
 end
 
 module Renderer : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val begin_ : t -> width:int -> height:int -> unit
   val end_ : t -> unit
@@ -217,8 +191,7 @@ module Renderer : sig
 end
 
 module Backend : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val autocreate : Wl.Display.t -> t
   val start : t -> bool
@@ -233,27 +206,23 @@ end
 
 module Data_device : sig
   module Manager : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
 
     val create : Wl.Display.t -> t
   end
 end
 
 module Compositor : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val create : Wl.Display.t -> Renderer.t -> t
 end
 
 module Xdg_shell : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   module Surface : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   val create : Wl.Display.t -> t
@@ -261,8 +230,7 @@ module Xdg_shell : sig
 end
 
 module Cursor : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val create : unit -> t
   val attach_output_layout : t -> Output_layout.t -> unit
@@ -275,20 +243,17 @@ module Cursor : sig
 end
 
 module Xcursor_manager : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   val create : string option -> int -> t
   val load : t -> float -> int
 end
 
 module Seat : sig
-  type t
-  include Comparable0 with type t := t
+  include Comparable0
 
   module Pointer_request_set_cursor_event : sig
-    type t
-    include Comparable0 with type t := t
+    include Comparable0
   end
 
   val create : Wl.Display.t -> string -> t
