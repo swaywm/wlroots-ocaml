@@ -9,6 +9,8 @@ include Ptr
 
 let create = Bindings.wlr_cursor_create
 let attach_output_layout = Bindings.wlr_cursor_attach_output_layout
+let attach_input_device = Bindings.wlr_cursor_attach_input_device
+let set_surface = Bindings.wlr_cursor_set_surface
 
 let signal_motion (cursor: t) : Pointer.Event_motion.t Wl.Signal.t = {
   c = cursor |-> Types.Cursor.events_motion;

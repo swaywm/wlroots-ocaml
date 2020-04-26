@@ -229,6 +229,10 @@ struct
   let wlr_xdg_shell_create = foreign "wlr_xdg_shell_create"
       (wl_display_p @-> returning wlr_xdg_shell_p)
 
+  (* wlr_input_device *)
+
+  let wlr_input_device_p = ptr Input_device.t
+
   (* wlr_cursor *)
 
   let wlr_cursor_p = ptr Cursor.t
@@ -239,6 +243,14 @@ struct
   let wlr_cursor_attach_output_layout =
     foreign "wlr_cursor_attach_output_layout"
       (wlr_cursor_p @-> wlr_output_layout_p @-> returning void)
+
+  let wlr_cursor_attach_input_device =
+    foreign "wlr_cursor_attach_input_device"
+      (wlr_cursor_p @-> wlr_input_device_p @-> returning void)
+
+  let wlr_cursor_set_surface =
+    foreign "wlr_cursor_set_surface"
+      (wlr_cursor_p @-> wlr_surface_p @-> int @-> int @-> returning void)
 
   (* wlr_xcursor_manager *)
 

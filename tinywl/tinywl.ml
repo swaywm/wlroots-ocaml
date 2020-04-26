@@ -14,6 +14,7 @@ type tinywl_server = {
   renderer : Renderer.t;
   output_layout : Output_layout.t;
   seat : Seat.t;
+  cursor : Cursor.t;
   mutable outputs : tinywl_output list;
   mutable views : view list;
   mutable keyboards : Keyboard.t list;
@@ -63,15 +64,15 @@ let server_cursor_frame _st _ _ =
 let server_new_keyboard _st (_keyboard: Keyboard.t) =
   failwith "todo"
 
-let server_new_pointer _st (_pointer: Pointer.t) =
-  failwith "todo"
+let server_new_pointer st (pointer: Input_device.t) =
+  Cursor.attach_input_device st.cursor pointer
 
 let server_new_input st _ (device: Input_device.t) =
   begin match Input_device.typ device with
   | Input_device.Keyboard keyboard ->
     server_new_keyboard st keyboard
-  | Input_device.Pointer pointer ->
-    server_new_pointer st pointer
+  | Input_device.Pointer _ ->
+    server_new_pointer st device
   | _ ->
     ()
   end;
@@ -84,8 +85,14 @@ let server_new_input st _ (device: Input_device.t) =
   in
   Seat.set_capabilities st.seat caps
 
-let server_request_cursor _st _ _ =
-  failwith "todo"
+let server_request_cursor st _ (ev: Seat.Pointer_request_set_cursor_event.t) =
+  let module E = Seat.Pointer_request_set_cursor_event in
+  let focused_client =
+    st.seat |> Seat.pointer_state |> Seat.Pointer_state.focused_client in
+
+  if Seat.Client.equal focused_client (E.seat_client ev) then (
+    Cursor.set_surface st.cursor (E.surface ev) (E.hotspot_x ev) (E.hotspot_y ev)
+  )
 
 let () =
   Log.(init Debug);
@@ -128,7 +135,7 @@ let () =
   let new_input = Wl.Listener.create () in
   let request_cursor = Wl.Listener.create () in
   let st = { display; backend; renderer; output_layout; new_output; seat;
-             outputs = []; views = []; keyboards = [] } in
+             cursor; outputs = []; views = []; keyboards = [] } in
 
   Wl.Signal.add (Backend.signal_new_output backend) new_output
     (server_new_output st);

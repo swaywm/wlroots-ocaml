@@ -319,18 +319,38 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Seat_client = struct
+    type t = [`seat_client] Ctypes.structure
+    let t : t typ = structure "wlr_seat_client"
+    let () = seal t
+  end
+
+  module Seat_pointer_state = struct
+    type t = [`seat_pointer_state] Ctypes.structure
+    let t : t typ = structure "wlr_seat_pointer_state"
+    let focused_client = field t "focused_client"
+        (ptr Seat_client.t)
+    let () = seal t
+  end
+
   module Seat = struct
     type t = [`seat] Ctypes.structure
     let t : t typ = structure "wlr_seat"
 
     let events_request_set_cursor =
       field t "events.request_set_cursor" Wl_signal.t
+    let pointer_state =
+      field t "pointer_state" Seat_pointer_state.t
     let () = seal t
   end
 
   module Seat_pointer_request_set_cursor_event = struct
     type t = [`seat_pointer_request_set_cursor_event] Ctypes.structure
     let t : t typ = structure "wlr_seat_pointer_request_set_cursor_event"
+    let seat_client = field t "seat_client" (ptr Seat_client.t)
+    let surface = field t "surface" (ptr Surface.t)
+    let hotspot_x = field t "hotspot_x" int
+    let hotspot_y = field t "hotspot_y" int
     let () = seal t
   end
 

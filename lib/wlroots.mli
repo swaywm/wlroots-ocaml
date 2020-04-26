@@ -234,7 +234,9 @@ module Cursor : sig
 
   val create : unit -> t
   val attach_output_layout : t -> Output_layout.t -> unit
-
+  val attach_input_device : t -> Input_device.t -> unit
+  val set_surface : t -> Surface.t -> int -> int -> unit
+  
   val signal_motion : t -> Pointer.Event_motion.t Wl.Signal.t
   val signal_motion_absolute : t -> Pointer.Event_motion_absolute.t Wl.Signal.t
   val signal_button : t -> Pointer.Event_button.t Wl.Signal.t
@@ -252,9 +254,26 @@ end
 module Seat : sig
   include Comparable0
 
-  module Pointer_request_set_cursor_event : sig
+  module Client : sig
     include Comparable0
   end
+
+  module Pointer_state : sig
+    include Comparable0
+
+    val focused_client : t -> Client.t
+  end
+
+  module Pointer_request_set_cursor_event : sig
+    include Comparable0
+
+    val seat_client : t -> Client.t
+    val surface : t -> Surface.t
+    val hotspot_x : t -> int
+    val hotspot_y : t -> int
+  end
+
+  val pointer_state : t -> Pointer_state.t
 
   val create : Wl.Display.t -> string -> t
   val signal_request_set_cursor :
