@@ -183,14 +183,14 @@ struct
       (wlr_renderer_p @-> ptr float @-> returning void)
 
   let wlr_renderer_init_wl_display = foreign "wlr_renderer_init_wl_display"
-      (wlr_renderer_p @-> wl_display_p @-> returning bool)
+      (wlr_renderer_p @-> wl_display_p @-> returning void)
 
   (* wlr_keyboard *)
 
   let wlr_keyboard_p = ptr Keyboard.t
 
   let wlr_keyboard_set_keymap = foreign "wlr_keyboard_set_keymap"
-      (wlr_keyboard_p @-> Xkbcommon.Keymap.t @-> returning bool)
+      (wlr_keyboard_p @-> Xkbcommon.Keymap.t @-> returning void)
 
   (* wlr_backend *)
 

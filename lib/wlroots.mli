@@ -128,7 +128,7 @@ module Keyboard : sig
 
   val xkb_state : t -> Xkbcommon.State.t
   val signal_key : t -> Event_key.t Wl.Signal.t
-  val set_keymap : t -> Xkbcommon.Keymap.t -> bool
+  val set_keymap : t -> Xkbcommon.Keymap.t -> unit
 end
 
 module Pointer : sig
@@ -187,7 +187,7 @@ module Renderer : sig
   val begin_ : t -> width:int -> height:int -> unit
   val end_ : t -> unit
   val clear : t -> float * float * float * float -> unit
-  val init_wl_display : t -> Wl.Display.t -> bool
+  val init_wl_display : t -> Wl.Display.t -> unit
 end
 
 module Backend : sig
