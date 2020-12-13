@@ -223,6 +223,7 @@ module Xdg_shell : sig
 
   module Surface : sig
     include Comparable0
+    val role : Xdg_shell.Surface.t -> Xdg_shell.Surface.role_t
   end
 
   val create : Wl.Display.t -> t

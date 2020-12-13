@@ -285,10 +285,27 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Xdg_surface_role = struct
+    (* The type of these may be compiler dependent *)
+    let none = constant "WLR_XDG_SURFACE_ROLE_NONE" int64_t
+    let top_level = constant "WLR_XDG_SURFACE_ROLE_TOPLEVEL" int64_t
+    let popup = constant "WLR_XDG_SURFACE_ROLE_POPUP" int64_t
+
+    type role = None | TopLevel | Popup
+
+    type t = [`xdg_surface_role] Ctypes.structure
+    let t : role typ = enum "wlr_xdg_surface_role" [
+        None, none;
+        TopLevel, top_level;
+        Popup, popup;
+      ]
+  end
+
   module Xdg_surface = struct
     type t = [`xdg_surface] Ctypes.structure
     let t : t typ = structure "wlr_xdg_surface"
 
+    let role = field t "role" Xdg_surface_role.t
     let () = seal t
   end
 
