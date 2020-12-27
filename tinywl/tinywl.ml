@@ -1,7 +1,11 @@
 open Wlroots
+open Ctypes
 
-type view
-  
+type view = {
+  surface : Xdg_shell.Surface.t;
+  listener: Wl.Listener.t;
+}
+
 type tinywl_output = {
   output : Output.t;
 
@@ -43,26 +47,51 @@ let server_new_output st _ output =
     Output.create_global output;
   end
 
-let server_new_xdg_surface _st _ _ =
-  failwith "todo"
+let server_new_xdg_surface st _listener surf =
+
+  let role = Xdg_shell.Surface.role surf in
+  begin match (!@ role) with
+    | None -> print_endline "Got None"
+    | TopLevel -> print_endline "Got TopLevel"
+    | Popup -> print_endline "Got Popup"
+  end;
+
+  let view_listener = Wl.Listener.create () in
+
+  let view = {
+    surface = surf;
+    listener = view_listener;
+  } in
+
+  st.views <- view :: st.views;
+
+  (* Start here *)
+  (* We want to add the signal handlers for the surface events using Wl.Signal.add *)
+  Wl.Signal.add (Xdg_shell.Surface.Events.destroy surf) view_listener
+    (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
+
+    (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
+    (* (server_new_xdg_surface st); *)
+
+  ()
 
 let server_cursor_motion _st _ _ =
-  failwith "todo"
+  failwith "server_cursor_motion"
 
 let server_cursor_motion_absolute _st _ _ =
-  failwith "todo"
+  failwith "server_cursor_motion_absolute"
 
 let server_cursor_button _st _ _ =
-  failwith "todo"
+  failwith "server_cursor_button"
 
 let server_cursor_axis _st _ _ =
-  failwith "todo"
+  failwith "server_cursor_axis"
 
 let server_cursor_frame _st _ _ =
-  failwith "todo"
+  failwith "server_cursor_frame"
 
 let server_new_keyboard _st (_keyboard: Keyboard.t) =
-  failwith "todo"
+  failwith "server_new_keyboard"
 
 let server_new_pointer st (pointer: Input_device.t) =
   Cursor.attach_input_device st.cursor pointer
