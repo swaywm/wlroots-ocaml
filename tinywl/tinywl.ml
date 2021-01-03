@@ -1,5 +1,4 @@
 open Wlroots
-open Ctypes
 
 type view = {
   surface : Xdg_shell.Surface.t;
@@ -47,10 +46,8 @@ let server_new_output st _ output =
     Output.create_global output;
   end
 
-let server_new_xdg_surface st _listener surf =
-
-  let role = Xdg_shell.Surface.role surf in
-  begin match (!@ role) with
+let server_new_xdg_surface st _listener (surf : Xdg_shell.Surface.t) =
+  begin match Xdg_shell.Surface.role surf with
     | None -> print_endline "Got None"
     | TopLevel -> print_endline "Got TopLevel"
     | Popup -> print_endline "Got Popup"
