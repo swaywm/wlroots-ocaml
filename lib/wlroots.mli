@@ -223,16 +223,16 @@ module Xdg_shell : sig
 
   module Surface : sig
     include Comparable0
-    val role : Xdg_shell.Surface.t -> Xdg_shell.Surface.role_t
+    val role : t -> Xdg_shell.Surface.role_t
 
     module Events : sig
-      val destroy : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
-      val ping_timeout : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
-      val new_popup : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
-      val map : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
-      val unmap : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
-      val configure : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
-      val ack_configure : Xdg_shell.Surface.t -> Xdg_shell.Surface.t Wl.Signal.t
+      val destroy : t -> t Wl.Signal.t
+      val ping_timeout : t -> t Wl.Signal.t
+      val new_popup : t -> t Wl.Signal.t
+      val map : t -> t Wl.Signal.t
+      val unmap : t -> t Wl.Signal.t
+      val configure : t -> t Wl.Signal.t
+      val ack_configure : t -> t Wl.Signal.t
 
     end
   end
