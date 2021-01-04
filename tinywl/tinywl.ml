@@ -1,7 +1,7 @@
 open Wlroots
 
 type view = {
-  surface : Xdg_shell.Surface.t;
+  surface : Xdg_shell.Xdg_surface.t;
   listener: Wl.Listener.t;
 }
 
@@ -46,8 +46,8 @@ let server_new_output st _ output =
     Output.create_global output;
   end
 
-let server_new_xdg_surface st _listener (surf : Xdg_shell.Surface.t) =
-  begin match Xdg_shell.Surface.role surf with
+let server_new_xdg_surface st _listener (surf : Xdg_shell.Xdg_surface.t) =
+  begin match Xdg_shell.Xdg_surface.role surf with
     | None -> print_endline "Got None"
     | TopLevel -> print_endline "Got TopLevel"
     | Popup -> print_endline "Got Popup"
@@ -64,7 +64,7 @@ let server_new_xdg_surface st _listener (surf : Xdg_shell.Surface.t) =
 
   (* Start here *)
   (* We want to add the signal handlers for the surface events using Wl.Signal.add *)
-  Wl.Signal.add (Xdg_shell.Surface.Events.destroy surf) view_listener
+  Wl.Signal.add (Xdg_shell.Xdg_surface.Events.destroy surf) view_listener
     (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
 
     (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)

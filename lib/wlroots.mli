@@ -221,7 +221,7 @@ end
 module Xdg_shell : sig
   include Comparable0
 
-  module Surface : sig
+  module Xdg_surface : sig
     include Comparable0
     type role = Wlroots_ffi_f.Ffi.Types.Xdg_surface_role.role
     val role : t -> role
@@ -239,7 +239,7 @@ module Xdg_shell : sig
   end
 
   val create : Wl.Display.t -> t
-  val signal_new_surface : t -> Surface.t Wl.Signal.t
+  val signal_new_surface : t -> Xdg_surface.t Wl.Signal.t
 end
 
 module Cursor : sig
