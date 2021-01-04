@@ -358,6 +358,14 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Seat_keyboard_state = struct
+    type t = [`seat_keyboard_state] Ctypes.structure
+    let t : t typ = structure "wlr_seat_keyboard_state"
+    let focused_surface = field t "focused_surface"
+        (ptr Surface.t)
+    let () = seal t
+  end
+
   module Seat = struct
     type t = [`seat] Ctypes.structure
     let t : t typ = structure "wlr_seat"
@@ -366,6 +374,8 @@ module Make (S : Cstubs_structs.TYPE) = struct
       field t "events.request_set_cursor" Wl_signal.t
     let pointer_state =
       field t "pointer_state" Seat_pointer_state.t
+    let keyboard_state =
+      field t "keyboard_state" Seat_keyboard_state.t
     let () = seal t
   end
 

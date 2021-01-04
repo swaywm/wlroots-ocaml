@@ -37,7 +37,17 @@ module Pointer_state = struct
     st |->> Types.Seat_pointer_state.focused_client
 end
 
+module Keyboard_state = struct
+  type t = Types.Seat_keyboard_state.t ptr
+  let t = ptr Types.Seat_keyboard_state.t
+  include Ptr
+
+  let focused_surface (st : t) =
+    st |->> Types.Seat_keyboard_state.focused_surface
+end
+
 let pointer_state seat = seat |-> Types.Seat.pointer_state
+let keyboard_state seat = seat |-> Types.Seat.keyboard_state
 
 let create = Bindings.wlr_seat_create
 

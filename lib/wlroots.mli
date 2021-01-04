@@ -277,6 +277,12 @@ module Seat : sig
     val focused_client : t -> Client.t
   end
 
+  module Keyboard_state : sig
+    include Comparable0
+
+    val focused_surface : t -> Surface.t
+  end
+
   module Pointer_request_set_cursor_event : sig
     include Comparable0
 
@@ -287,6 +293,7 @@ module Seat : sig
   end
 
   val pointer_state : t -> Pointer_state.t
+  val keyboard_state : t -> Keyboard_state.t
 
   val create : Wl.Display.t -> string -> t
   val signal_request_set_cursor :
