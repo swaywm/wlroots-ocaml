@@ -43,7 +43,10 @@ module Keyboard_state = struct
   include Ptr
 
   let focused_surface (st : t) =
-    st |->> Types.Seat_keyboard_state.focused_surface
+    let surf = st |-> Types.Seat_keyboard_state.focused_surface in
+    if is_null surf
+    then None
+    else Some (!@ surf)
 end
 
 let pointer_state seat = seat |-> Types.Seat.pointer_state

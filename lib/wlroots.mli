@@ -282,7 +282,7 @@ module Seat : sig
   module Keyboard_state : sig
     include Comparable0
 
-    val focused_surface : t -> Surface.t
+    val focused_surface : t -> Surface.t option
   end
 
   module Pointer_request_set_cursor_event : sig
