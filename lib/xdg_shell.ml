@@ -14,6 +14,8 @@ module Xdg_surface = struct
 
   let role (surface : t) : role =
     surface |->> Types.Xdg_surface.role
+  let surface (surface : t) : Surface.t =
+    surface |-> Types.Xdg_surface.surface
 
   module Events = struct
     let destroy (surface : t) : t Wl.Signal.t = {

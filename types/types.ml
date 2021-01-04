@@ -306,6 +306,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_xdg_surface"
 
     let role = field t "role" Xdg_surface_role.t
+    let surface = field t "surface" Surface.t
 
     let events_destroy = field t "events.destroy" Wl_signal.t
     let events_ping_timeout = field t "events.ping_timeout" Wl_signal.t

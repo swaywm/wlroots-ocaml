@@ -224,7 +224,9 @@ module Xdg_shell : sig
   module Xdg_surface : sig
     include Comparable0
     type role = Wlroots_ffi_f.Ffi.Types.Xdg_surface_role.role
+
     val role : t -> role
+    val surface : t -> Surface.t
 
     module Events : sig
       val destroy : t -> t Wl.Signal.t
