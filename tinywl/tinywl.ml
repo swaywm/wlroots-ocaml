@@ -46,6 +46,21 @@ let server_new_output st _ output =
     Output.create_global output;
   end
 
+let focus_view st _listener surf =
+  let seat = Seat.keyboard_state st.seat in
+  let prev_surface = Seat.Keyboard_state.focused_surface seat in
+  let to_deactivate =
+    Option.bind prev_surface (fun prev ->
+        if prev == Xdg_surface.surface surf
+        then None
+        else Xdg_surface.from_surface prev
+      )
+  in
+  Option.iter (fun s ->
+      let _ = Xdg_surface.toplevel_set_activated s false in ())
+    to_deactivate;
+  ()
+
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   begin match Xdg_surface.role surf with
     | None -> print_endline "Got None"
@@ -67,6 +82,8 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   Wl.Signal.add (Xdg_surface.Events.destroy surf) view_listener
     (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
 
+  Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
+    (focus_view st);
     (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
     (* (server_new_xdg_surface st); *)
 
