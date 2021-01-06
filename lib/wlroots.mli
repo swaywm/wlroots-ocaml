@@ -228,6 +228,8 @@ module Xdg_shell : sig
     val role : t -> role
     val surface : t -> Surface.t
 
+    val from_surface : Surface.t -> t option
+
     module Events : sig
       val destroy : t -> t Wl.Signal.t
       val ping_timeout : t -> t Wl.Signal.t

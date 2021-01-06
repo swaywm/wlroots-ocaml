@@ -17,6 +17,15 @@ module Xdg_surface = struct
   let surface (surface : t) : Surface.t =
     surface |-> Types.Xdg_surface.surface
 
+  let from_surface (surface : Surface.t) : t option =
+    (* This is not exactly a verbatim binding but it is safer *)
+    (* Worth it? *)
+    if Bindings.wlr_surface_is_xdg_surface surface
+    then
+      (* assert is called so this might blow up *)
+      Some (Bindings.wlr_xdg_surface_from_wlr_surface surface)
+    else None
+
   module Events = struct
     let destroy (surface : t) : t Wl.Signal.t = {
       c = surface |-> Types.Xdg_surface.events_destroy;

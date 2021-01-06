@@ -229,6 +229,16 @@ struct
   let wlr_xdg_shell_create = foreign "wlr_xdg_shell_create"
       (wl_display_p @-> returning wlr_xdg_shell_p)
 
+  (* wlr_xdg_surface *)
+
+  let wlr_xdg_surface_p = ptr Xdg_surface.t
+
+  let wlr_surface_is_xdg_surface = foreign "wlr_surface_is_xdg_surface"
+      (wlr_surface_p @-> returning bool)
+
+  let wlr_xdg_surface_from_wlr_surface = foreign "wlr_xdg_surface_from_wlr_surface"
+      (wlr_surface_p @-> returning wlr_xdg_surface_p)
+
   (* wlr_input_device *)
 
   let wlr_input_device_p = ptr Input_device.t
