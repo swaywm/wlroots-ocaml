@@ -25,6 +25,9 @@ let from_surface (surface : Surface.t) : t option =
     Some (Bindings.wlr_xdg_surface_from_wlr_surface surface)
   else None
 
+let toplevel_set_activated =
+  Bindings.wlr_xdg_toplevel_set_activated
+
 module Events = struct
   let destroy (surface : t) : t Wl.Signal.t = {
     c = surface |-> Types.Xdg_surface.events_destroy;

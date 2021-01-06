@@ -239,6 +239,11 @@ struct
   let wlr_xdg_surface_from_wlr_surface = foreign "wlr_xdg_surface_from_wlr_surface"
       (wlr_surface_p @-> returning wlr_xdg_surface_p)
 
+  (* wlr_xdg_toplevel *)
+
+  let wlr_xdg_toplevel_set_activated = foreign "wlr_xdg_toplevel_set_activated"
+      (wlr_xdg_surface_p @-> bool @-> returning uint32_t)
+
   (* wlr_input_device *)
 
   let wlr_input_device_p = ptr Input_device.t
