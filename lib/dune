@@ -16,8 +16,8 @@
            generated_ffi
            wl log texture surface box matrix output
            keyboard pointer touch tablet_tool tablet_pad input_device
-           backend renderer data_device compositor xdg_shell cursor
-           xcursor_manager seat output_layout)
+           backend renderer data_device compositor xdg_shell xdg_surface
+           cursor xcursor_manager seat output_layout)
   (c_names generated_ffi_stubs)
   (c_flags (:standard -Werror -pedantic -Wall -Wunused -DWLR_USE_UNSTABLE -O0) -w
            (:include ../config/wlroots-ccopt.sexp)

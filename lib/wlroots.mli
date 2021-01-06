@@ -218,29 +218,29 @@ module Compositor : sig
   val create : Wl.Display.t -> Renderer.t -> t
 end
 
+module Xdg_surface : sig
+  include Comparable0
+  type role = Wlroots_ffi_f.Ffi.Types.Xdg_surface_role.role
+
+  val role : t -> role
+  val surface : t -> Surface.t
+
+  val from_surface : Surface.t -> t option
+
+  module Events : sig
+    val destroy : t -> t Wl.Signal.t
+    val ping_timeout : t -> t Wl.Signal.t
+    val new_popup : t -> t Wl.Signal.t
+    val map : t -> t Wl.Signal.t
+    val unmap : t -> t Wl.Signal.t
+    val configure : t -> t Wl.Signal.t
+    val ack_configure : t -> t Wl.Signal.t
+
+  end
+end
+
 module Xdg_shell : sig
   include Comparable0
-
-  module Xdg_surface : sig
-    include Comparable0
-    type role = Wlroots_ffi_f.Ffi.Types.Xdg_surface_role.role
-
-    val role : t -> role
-    val surface : t -> Surface.t
-
-    val from_surface : Surface.t -> t option
-
-    module Events : sig
-      val destroy : t -> t Wl.Signal.t
-      val ping_timeout : t -> t Wl.Signal.t
-      val new_popup : t -> t Wl.Signal.t
-      val map : t -> t Wl.Signal.t
-      val unmap : t -> t Wl.Signal.t
-      val configure : t -> t Wl.Signal.t
-      val ack_configure : t -> t Wl.Signal.t
-
-    end
-  end
 
   val create : Wl.Display.t -> t
   val signal_new_surface : t -> Xdg_surface.t Wl.Signal.t
