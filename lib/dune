@@ -16,6 +16,7 @@
            generated_ffi
            wl log texture surface box matrix output
            keyboard pointer touch tablet_tool tablet_pad input_device
+           keyboard_modifiers
            backend renderer data_device compositor xdg_shell xdg_surface
            cursor xcursor_manager seat output_layout)
   (c_names generated_ffi_stubs)
