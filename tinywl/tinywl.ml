@@ -3,6 +3,7 @@ open Wlroots
 type view = {
   surface : Xdg_surface.t;
   listener: Wl.Listener.t;
+  mapped: bool;
 }
 
 type tinywl_output = {
