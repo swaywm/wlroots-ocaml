@@ -63,6 +63,11 @@ let focus_view st view _listener surf =
   st.views <- view :: List.filter ((!=) view) st.views;
   discard (Xdg_surface.toplevel_set_activated surf true);
   Seat.keyboard_notify_enter
+    st.seat
+    (Xdg_surface.surface surf)
+    (Keyboard.keycodes keyboard)
+    (Keyboard.num_keycodes keyboard)
+    (Keyboard.modifiers keyboard)
 
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   begin match Xdg_surface.role surf with
