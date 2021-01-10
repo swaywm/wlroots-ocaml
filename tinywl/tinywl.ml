@@ -79,20 +79,20 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
 
   let view_listener = Wl.Listener.create () in
 
-  let view = {
+  let view = ref {
     surface = surf;
     listener = view_listener;
+    mapped = false;
   } in
 
-  st.views <- view :: st.views;
+  st.views <- !view :: st.views;
 
-  (* Start here *)
   (* We want to add the signal handlers for the surface events using Wl.Signal.add *)
   Wl.Signal.add (Xdg_surface.Events.destroy surf) view_listener
-    (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
+    (fun _ _ -> st.views <- List.filter (fun item -> not (item == !view)) st.views;);
 
   Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
-    (focus_view st view);
+    (focus_view st !view);
     (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
     (* (server_new_xdg_surface st); *)
 
