@@ -93,6 +93,12 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
 
   Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
     (focus_view st !view);
+  Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
+    (fun _ _ -> view := {
+         surface = surf;
+         listener = view_listener;
+         mapped = false;
+       });
     (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
     (* (server_new_xdg_surface st); *)
 
