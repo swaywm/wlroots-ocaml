@@ -46,9 +46,9 @@ let server_new_output st _ output =
     Output.create_global output;
   end
 
-let focus_view st _listener surf =
-  let seat = Seat.keyboard_state st.seat in
-  let prev_surface = Seat.Keyboard_state.focused_surface seat in
+let focus_view st view _listener surf =
+  let keyboard_state = Seat.keyboard_state st.seat in
+  let prev_surface = Seat.Keyboard_state.focused_surface keyboard_state in
   let to_deactivate =
     Option.bind prev_surface (fun prev ->
         if prev == Xdg_surface.surface surf
@@ -56,10 +56,13 @@ let focus_view st _listener surf =
         else Xdg_surface.from_surface prev
       )
   in
-  Option.iter (fun s ->
-      let _ = Xdg_surface.toplevel_set_activated s false in ())
+  let discard _ = () in
+  Option.iter (fun s -> discard (Xdg_surface.toplevel_set_activated s false))
     to_deactivate;
-  ()
+  let keyboard = Seat.Keyboard_state.keyboard keyboard_state in
+  st.views <- view :: List.filter ((!=) view) st.views;
+  discard (Xdg_surface.toplevel_set_activated surf true);
+  Seat.keyboard_notify_enter
 
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   begin match Xdg_surface.role surf with
@@ -83,7 +86,7 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
     (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
 
   Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
-    (focus_view st);
+    (focus_view st view);
     (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
     (* (server_new_xdg_surface st); *)
 
