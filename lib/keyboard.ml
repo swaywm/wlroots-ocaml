@@ -21,6 +21,10 @@ end
 
 let xkb_state = getfield Types.Keyboard.xkb_state
 
+let modifiers = getfield Types.Keyboard.modifiers
+let keycodes = getfield Types.Keyboard.keycodes
+let num_keycodes = getfield Types.Keyboard.num_keycodes
+
 let signal_key (keyboard : t) : Event_key.t Wl.Signal.t = {
   c = keyboard |-> Types.Keyboard.events_key;
   typ = ptr Types.Event_keyboard_key.t;

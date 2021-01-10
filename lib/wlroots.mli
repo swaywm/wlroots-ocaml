@@ -135,6 +135,9 @@ module Keyboard : sig
   end
 
   val xkb_state : t -> Xkbcommon.State.t
+  val modifiers : t -> Keyboard_modifiers.t
+  val keycodes : t -> Keycodes.t
+  val num_keycodes : t -> Unsigned.size_t
   val signal_key : t -> Event_key.t Wl.Signal.t
   val set_keymap : t -> Xkbcommon.Keymap.t -> bool
 end
