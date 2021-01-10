@@ -112,6 +112,10 @@ module Output_layout : sig
   val add_auto : t -> Output.t -> unit
 end
 
+module Keycodes : sig
+  include Comparable0
+end
+
 module Keyboard_modifiers : sig
   include Comparable0
 end

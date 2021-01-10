@@ -135,6 +135,12 @@ module Make (S : Cstubs_structs.TYPE) = struct
     ]
   end
 
+  (* This is an array of unit32_t keycodes: uint32_t keycodes[] *)
+  module Keycodes = struct
+    type t = unit ptr
+    let t : t typ = ptr void
+  end
+
   module Event_keyboard_key = struct
     type t = [`event_keyboard_key] Ctypes.structure
     let t : t typ = structure "wlr_event_keyboard_key"
