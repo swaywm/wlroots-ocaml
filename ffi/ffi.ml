@@ -192,6 +192,8 @@ struct
   let wlr_keyboard_set_keymap = foreign "wlr_keyboard_set_keymap"
       (wlr_keyboard_p @-> Xkbcommon.Keymap.t @-> returning bool)
 
+  let wlr_keyboard_modifiers_p = ptr Keyboard_modifiers.t
+
   (* wlr_backend *)
 
   let wlr_backend_p = ptr Backend.t

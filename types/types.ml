@@ -144,11 +144,18 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let state = field t "state" Key_state.t
   end
 
+  module Keyboard_modifiers = struct
+    type t = [`keyboard_modifier] Ctypes.structure
+    let t : t typ = structure "wlr_keyboard_modifiers"
+    let () = seal t
+  end
+
   module Keyboard = struct
     type t = [`keyboard] Ctypes.structure
     let t : t typ = structure "wlr_keyboard"
 
     let xkb_state = field t "xkb_state" (lift_typ Xkbcommon.State.t)
+    let modifiers = field t "modifiers" Keyboard_modifiers.t
     let events_key = field t "events.key" Wl_signal.t
     let () = seal t
   end
@@ -364,6 +371,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_seat_keyboard_state"
     let focused_surface = field t "focused_surface"
         (ptr Surface.t)
+    let keyboard = field t "keyboard" (ptr Keyboard.t)
     let () = seal t
   end
 

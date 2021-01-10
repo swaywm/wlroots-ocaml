@@ -285,6 +285,7 @@ module Seat : sig
   module Keyboard_state : sig
     include Comparable0
 
+    val keyboard : t -> Keyboard.t
     val focused_surface : t -> Surface.t option
   end
 

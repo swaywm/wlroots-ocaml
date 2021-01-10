@@ -42,6 +42,8 @@ module Keyboard_state = struct
   let t = ptr Types.Seat_keyboard_state.t
   include Ptr
 
+  let keyboard = getfield Types.Seat_keyboard_state.keyboard
+
   let focused_surface (st : t) =
     let surf = st |-> Types.Seat_keyboard_state.focused_surface in
     if is_null surf
