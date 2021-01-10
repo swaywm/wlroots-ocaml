@@ -64,3 +64,6 @@ let signal_request_set_cursor (seat: t) : _ Wl.Signal.t = {
 let set_capabilities seat caps =
   Bindings.wlr_seat_set_capabilities
     seat (coerce Wl.Seat_capability.t uint64_t caps)
+
+let keyboard_notify_enter =
+  Bindings.wlr_seat_keyboard_notify_enter

@@ -316,6 +316,8 @@ module Seat : sig
   val signal_request_set_cursor :
     t -> Pointer_request_set_cursor_event.t Wl.Signal.t
   val set_capabilities : t -> Wl.Seat_capability.t -> unit
+  val keyboard_notify_enter :
+    t -> Surface.t -> Keycodes.t -> Unsigned.size_t -> Keyboard_modifiers.t -> unit
 end
 
 module Log : sig

@@ -289,6 +289,14 @@ struct
   let wlr_seat_set_capabilities = foreign "wlr_seat_set_capabilities"
       (wlr_seat_p @-> Wl_seat_capability.t @-> returning void)
 
+  let wlr_seat_keyboard_notify_enter = foreign "wlr_seat_keyboard_notify_enter"
+      (wlr_seat_p
+       @-> wlr_surface_p
+       @-> Keycodes.t
+       @-> size_t
+       @-> wlr_keyboard_modifiers_p
+       @-> returning void)
+
   (* wlr_log *)
 
   (* TODO *)
