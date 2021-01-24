@@ -123,8 +123,6 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
     (focus_view st view) ;
   Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
     (fun _ _ -> view.mapped <- false;);
-    (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
-    (* (server_new_xdg_surface st); *)
 
   (* cotd *)
   let toplevel = Xdg_surface.toplevel surf in
