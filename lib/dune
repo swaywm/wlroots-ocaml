@@ -35,6 +35,7 @@
            compositor
            xdg_shell
            xdg_surface
+           xdg_toplevel
            cursor
            xcursor_manager
            seat

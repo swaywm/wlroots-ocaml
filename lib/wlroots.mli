@@ -229,12 +229,22 @@ module Compositor : sig
   val create : Wl.Display.t -> Renderer.t -> t
 end
 
+module Xdg_toplevel: sig
+  include Comparable0
+
+  module Events: sig
+    val request_move : t -> t Wl.Signal.t
+    val request_resize : t -> t Wl.Signal.t
+  end
+end
+
 module Xdg_surface : sig
   include Comparable0
   type role = Wlroots_ffi_f.Ffi.Types.Xdg_surface_role.role
 
   val role : t -> role
   val surface : t -> Surface.t
+  val toplevel : t -> Xdg_toplevel.t
 
   val from_surface : Surface.t -> t option
   val toplevel_set_activated : t -> bool -> Unsigned.uint32

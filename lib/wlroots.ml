@@ -6,6 +6,7 @@ module Xcursor_manager = Xcursor_manager
 module Cursor = Cursor
 module Xdg_shell = Xdg_shell
 module Xdg_surface = Xdg_surface
+module Xdg_toplevel = Xdg_toplevel
 module Compositor = Compositor
 module Data_device = Data_device
 module Backend = Backend

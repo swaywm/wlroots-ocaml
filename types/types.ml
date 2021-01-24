@@ -316,12 +316,23 @@ module Make (S : Cstubs_structs.TYPE) = struct
       ]
   end
 
+  module Xdg_toplevel = struct
+    type t = [`xdg_toplevel] Ctypes.structure
+    let t : t typ = structure "wlr_xdg_toplevel"
+
+    let events_request_move = field t "events.request_move" Wl_signal.t
+    let events_request_resize = field t "events.request_resize" Wl_signal.t
+
+    let () = seal t
+  end
+
   module Xdg_surface = struct
     type t = [`xdg_surface] Ctypes.structure
     let t : t typ = structure "wlr_xdg_surface"
 
     let role = field t "role" Xdg_surface_role.t
     let surface = field t "surface" Surface.t
+    let toplevel = field t "toplevel" Xdg_toplevel.t
 
     let events_destroy = field t "events.destroy" Wl_signal.t
     let events_ping_timeout = field t "events.ping_timeout" Wl_signal.t
