@@ -26,6 +26,10 @@ type tinywl_server = {
   new_output : Wl.Listener.t;
 }
 
+type cursor_mode = Passthrough
+                 | Move
+                 | Resize of Unsigned.uint32
+
 let output_frame _st _ _ =
   failwith "todo"
 
@@ -46,6 +50,9 @@ let server_new_output st _ output =
     Output_layout.add_auto st.output_layout output;
     Output.create_global output;
   end
+
+let begin_interactive _st (_view: view) (_mode: cursor_mode) =
+  print_endline "Begin interactive"
 
 let focus_view st view _listener surf =
   let keyboard_state = Seat.keyboard_state st.seat in
@@ -98,6 +105,14 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
     (* Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface *)
     (* (server_new_xdg_surface st); *)
 
+  (* cotd *)
+  let toplevel = Xdg_surface.toplevel surf in
+
+  Wl.Signal.add (Xdg_toplevel.Events.request_move toplevel) view_listener
+    (fun _ _ -> begin_interactive st view Move);
+  Wl.Signal.add (Xdg_toplevel.Events.request_resize toplevel) view_listener
+    (* FIXME: Need to actually get the edges from the event to pass with Resize *)
+    (fun _ _ -> begin_interactive st view (Resize (Unsigned.UInt32.of_int 0)));
   ()
 
 let server_cursor_motion _st _ _ =
