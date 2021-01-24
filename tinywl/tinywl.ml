@@ -1,9 +1,15 @@
 open Wlroots
+open Xkbcommon
 
 type view = {
   surface : Xdg_surface.t;
   listener: Wl.Listener.t;
   mutable mapped: bool;
+}
+
+type keyboard = {
+  device: Keyboard.t;
+  listener: Wl.Listener.t;
 }
 
 type tinywl_output = {
@@ -21,7 +27,7 @@ type tinywl_server = {
   cursor : Cursor.t;
   mutable outputs : tinywl_output list;
   mutable views : view list;
-  mutable keyboards : Keyboard.t list;
+  mutable keyboards : keyboard list;
 
   new_output : Wl.Listener.t;
 }
@@ -29,6 +35,14 @@ type tinywl_server = {
 type cursor_mode = Passthrough
                  | Move
                  | Resize of Unsigned.uint32
+
+let default_xkb_rules : Xkbcommon.Rule_names.t = {
+  rules = None;
+  model = None;
+  layout = None;
+  variant = None;
+  options = None;
+}
 
 let output_frame _st _ _ =
   failwith "todo"
@@ -131,8 +145,17 @@ let server_cursor_axis _st _ _ =
 let server_cursor_frame _st _ _ =
   failwith "server_cursor_frame"
 
-let server_new_keyboard _st (_keyboard: Keyboard.t) =
-  failwith "server_new_keyboard"
+let server_new_keyboard st (keyboard: Keyboard.t) =
+  let listener = Wl.Listener.create () in
+  let tinywl_keyboard = {
+    device = keyboard;
+    listener = listener;
+  } in
+  let keymap = Xkbcommon.Keymap.new_from_names
+                 (Xkbcommon.Context.create [] ())
+                 default_xkb_rules
+  in
+  ()
 
 let server_new_pointer st (pointer: Input_device.t) =
   Cursor.attach_input_device st.cursor pointer
