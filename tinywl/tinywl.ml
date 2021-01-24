@@ -98,6 +98,7 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   Wl.Signal.add (Xdg_surface.Events.destroy surf) view_listener
     (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
 
+  (* Might need to make mapped true in this guy *)
   Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
     (focus_view st view) ;
   Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
