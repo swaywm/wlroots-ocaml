@@ -1,5 +1,4 @@
 open Wlroots
-open Xkbcommon
 
 type view = {
   surface : Xdg_surface.t;
@@ -151,10 +150,23 @@ let server_new_keyboard st (keyboard: Keyboard.t) =
     device = keyboard;
     listener = listener;
   } in
-  let keymap = Xkbcommon.Keymap.new_from_names
-                 (Xkbcommon.Context.create [] ())
-                 default_xkb_rules
+  let xkb_context = match Xkbcommon.Context.create () with
+    | Some ctx -> ctx
+    | None -> failwith "Xkbcommon.Context.create"
   in
+  let keymap = match Xkbcommon.Keymap.new_from_names xkb_context default_xkb_rules with
+    | Some m -> m
+    | None -> failwith "Xkbcommon.Keymap.new_from_names"
+  in
+  let _ = Keyboard.set_keymap keyboard keymap in
+  (* Is this for some reference counting stuff?????? *)
+  let _ = Xkbcommon.Keymap.unref keymap in
+  let _ = Xkbcommon.Context.unref xkb_context in
+  let _ = Keyboard.set_repeat_info keyboard 25 6000 in
+
+  (* TODO: insert our event handlers *)
+
+  st.keyboards <- tinywl_keyboard :: st.keyboards;
   ()
 
 let server_new_pointer st (pointer: Input_device.t) =

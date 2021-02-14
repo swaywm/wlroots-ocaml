@@ -31,3 +31,9 @@ let signal_key (keyboard : t) : Event_key.t Wl.Signal.t = {
 }
 
 let set_keymap = Bindings.wlr_keyboard_set_keymap
+
+let set_repeat_info keyboard rate delay =
+  Bindings.wlr_keyboard_set_repeat_info
+    keyboard
+    (Signed.Int32.of_int rate)
+    (Signed.Int32.of_int delay)
