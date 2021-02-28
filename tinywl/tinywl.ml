@@ -97,6 +97,7 @@ let keyboard_handle_modifiers st device _ keyboard =
   ()
 
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
+  (* TODO: Only do the rest if the surface is toplevel *)
   begin match Xdg_surface.role surf with
     | None -> print_endline "Got None"
     | TopLevel -> print_endline "Got TopLevel"
@@ -150,7 +151,20 @@ let server_cursor_axis _st _ _ =
 let server_cursor_frame _st _ _ =
   failwith "server_cursor_frame"
 
-let keyboard_handle_key _ _key_evt = ()
+let handle_keybinding _st _sym =
+
+let keyboard_handle_key st keyboard _ key_evt =
+  let keycode = Keyboard.Event_key.keycode key_evt in
+  let syms = Xkbcommon.State.key_get_syms (Keyboard.xkb_state keyboard) keycode in
+  let modifiers = Keyboard.get_modifiers keyboard in
+  let handled =
+    if Keyboard_modifiers.has_alt modifiers && Keyboard.Event_key.state key_evt == Keyboard.Pressed
+    then List.fold_left (fun _ sym -> handle_keybinding st sym) false syms
+    else false
+  in
+  if not handled
+  then
+  else ()
 
 let server_new_keyboard_set_settings (keyboard: Keyboard.t) =
   let xkb_context = match Xkbcommon.Context.create () with
@@ -176,7 +190,7 @@ let server_new_keyboard st (device: Input_device.t) =
      Wl.Signal.add (Keyboard.Events.modifiers keyboard) modifiers
        (keyboard_handle_modifiers st device);
      Wl.Signal.add (Keyboard.Events.key keyboard) key
-       keyboard_handle_key;
+       (keyboard_handle_key st keyboard);
      let tinywl_keyboard = {
        device = keyboard;
        modifiers = modifiers;
