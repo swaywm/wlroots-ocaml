@@ -118,6 +118,7 @@ end
 
 module Keyboard_modifiers : sig
   include Comparable0
+  val has_alt : Unsigned.uint32 -> bool
 end
 
 module Keyboard : sig
