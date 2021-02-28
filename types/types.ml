@@ -163,6 +163,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let xkb_state = field t "xkb_state" (lift_typ Xkbcommon.State.t)
     let modifiers = field t "modifiers" (ptr Keyboard_modifiers.t)
     let events_key = field t "events.key" Wl_signal.t
+    let events_modifiers = field t "events.modifiers" Wl_signal.t
     let keycodes = field t "keycodes" Keycodes.t
     let num_keycodes = field t "num_keycodes" size_t
     let () = seal t

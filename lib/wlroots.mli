@@ -138,9 +138,13 @@ module Keyboard : sig
   val modifiers : t -> Keyboard_modifiers.t
   val keycodes : t -> Keycodes.t
   val num_keycodes : t -> Unsigned.size_t
-  val signal_key : t -> Event_key.t Wl.Signal.t
   val set_keymap : t -> Xkbcommon.Keymap.t -> bool
   val set_repeat_info : t -> int -> int -> unit
+
+  module Events : sig
+    val key : t -> Event_key.t Wl.Signal.t
+    val modifiers : t -> t Wl.Signal.t
+  end
 end
 
 module Pointer : sig
@@ -276,7 +280,7 @@ module Cursor : sig
   val attach_output_layout : t -> Output_layout.t -> unit
   val attach_input_device : t -> Input_device.t -> unit
   val set_surface : t -> Surface.t -> int -> int -> unit
-  
+
   val signal_motion : t -> Pointer.Event_motion.t Wl.Signal.t
   val signal_motion_absolute : t -> Pointer.Event_motion_absolute.t Wl.Signal.t
   val signal_button : t -> Pointer.Event_button.t Wl.Signal.t
