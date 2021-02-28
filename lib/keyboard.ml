@@ -26,6 +26,7 @@ let keycodes = getfield Types.Keyboard.keycodes
 let num_keycodes = getfield Types.Keyboard.num_keycodes
 
 let set_keymap = Bindings.wlr_keyboard_set_keymap
+let get_modifiers = Bindings.wlr_keyboard_get_modifiers
 
 let set_repeat_info keyboard rate delay =
   Bindings.wlr_keyboard_set_repeat_info

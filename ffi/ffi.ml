@@ -197,6 +197,9 @@ struct
   let wlr_keyboard_set_repeat_info = foreign "wlr_keyboard_set_repeat_info"
       (wlr_keyboard_p @-> int32_t @-> int32_t @-> returning void)
 
+  let wlr_keyboard_get_modifiers = foreign "wlr_keyboard_get_modifiers"
+      (wlr_keyboard_p @-> returning uint32_t)
+
   (* wlr_backend *)
 
   let wlr_backend_p = ptr Backend.t

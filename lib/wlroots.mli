@@ -140,6 +140,7 @@ module Keyboard : sig
   val num_keycodes : t -> Unsigned.size_t
   val set_keymap : t -> Xkbcommon.Keymap.t -> bool
   val set_repeat_info : t -> int -> int -> unit
+  val get_modifiers : t -> Unsigned.uint32
 
   module Events : sig
     val key : t -> Event_key.t Wl.Signal.t
