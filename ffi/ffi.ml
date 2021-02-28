@@ -292,6 +292,12 @@ struct
   let wlr_seat_set_capabilities = foreign "wlr_seat_set_capabilities"
       (wlr_seat_p @-> Wl_seat_capability.t @-> returning void)
 
+  let wlr_seat_set_keyboard = foreign "wlr_seat_set_keyboard"
+      (wlr_seat_p @-> wlr_input_device_p @-> returning void)
+
+  let wlr_seat_keyboard_notify_modifiers = foreign "wlr_seat_keyboard_notify_modifiers"
+      (wlr_seat_p @-> wlr_keyboard_modifiers_p @-> returning void)
+
   let wlr_seat_keyboard_notify_enter = foreign "wlr_seat_keyboard_notify_enter"
       (wlr_seat_p
        @-> wlr_surface_p

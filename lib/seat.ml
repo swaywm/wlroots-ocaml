@@ -65,5 +65,11 @@ let set_capabilities seat caps =
   Bindings.wlr_seat_set_capabilities
     seat (coerce Wl.Seat_capability.t uint64_t caps)
 
+let set_keyboard =
+  Bindings.wlr_seat_set_keyboard
+
+let keyboard_notify_modifiers =
+  Bindings.wlr_seat_keyboard_notify_modifiers
+
 let keyboard_notify_enter =
   Bindings.wlr_seat_keyboard_notify_enter
