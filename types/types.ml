@@ -150,6 +150,31 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let state = field t "state" Key_state.t
   end
 
+  module Keyboard_modifier = struct
+    type modifier =
+      Shift | Caps | Ctrl | Alt | Mod2 | Mod3 | Logo | Mod5
+
+    let _WLR_MODIFIER_SHIFT = constant "WLR_MODIFIER_SHIFT" int64_t
+    let _WLR_MODIFIER_CAPS = constant "WLR_MODIFIER_CAPS" int64_t
+    let _WLR_MODIFIER_CTRL = constant "WLR_MODIFIER_CTRL" int64_t
+    let _WLR_MODIFIER_ALT = constant "WLR_MODIFIER_ALT" int64_t
+    let _WLR_MODIFIER_MOD2 = constant "WLR_MODIFIER_MOD2" int64_t
+    let _WLR_MODIFIER_MOD3 = constant "WLR_MODIFIER_MOD3" int64_t
+    let _WLR_MODIFIER_LOGO = constant "WLR_MODIFIER_LOGO" int64_t
+    let _WLR_MODIFIER_MOD5 = constant "WLR_MODIFIER_MOD5" int64_t
+
+    let modifier : modifier typ =
+      enum "wlr_keyboard_modifier" [
+        Shift, _WLR_MODIFIER_SHIFT;
+        Ctrl, _WLR_MODIFIER_CTRL;
+        Alt, _WLR_MODIFIER_ALT;
+        Mod2, _WLR_MODIFIER_MOD2;
+        Mod3, _WLR_MODIFIER_MOD3;
+        Logo, _WLR_MODIFIER_LOGO;
+        Mod5, _WLR_MODIFIER_MOD5;
+      ]
+  end
+
   module Keyboard_modifiers = struct
     type t = [`keyboard_modifier] Ctypes.structure
     let t : t typ = structure "wlr_keyboard_modifiers"
