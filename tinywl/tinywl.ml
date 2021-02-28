@@ -8,7 +8,8 @@ type view = {
 
 type keyboard = {
   device: Keyboard.t;
-  listener: Wl.Listener.t;
+  modifiers: Wl.Listener.t;
+  key: Wl.Listener.t;
 }
 
 type tinywl_output = {
@@ -90,6 +91,8 @@ let focus_view st view _listener surf =
     (Keyboard.num_keycodes keyboard)
     (Keyboard.modifiers keyboard)
 
+let keyboard_handle_modifiers _ _keyboard = ()
+
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   begin match Xdg_surface.role surf with
     | None -> print_endline "Got None"
@@ -144,11 +147,15 @@ let server_cursor_axis _st _ _ =
 let server_cursor_frame _st _ _ =
   failwith "server_cursor_frame"
 
+let keyboard_handle_key _ _key_evt = ()
+
 let server_new_keyboard st (keyboard: Keyboard.t) =
-  let listener = Wl.Listener.create () in
+  let modifiers = Wl.Listener.create () in
+  let key = Wl.Listener.create () in
   let tinywl_keyboard = {
     device = keyboard;
-    listener = listener;
+    modifiers = modifiers;
+    key = key;
   } in
   let xkb_context = match Xkbcommon.Context.create () with
     | Some ctx -> ctx
@@ -164,7 +171,10 @@ let server_new_keyboard st (keyboard: Keyboard.t) =
   let _ = Xkbcommon.Context.unref xkb_context in
   let _ = Keyboard.set_repeat_info keyboard 25 6000 in
 
-  (* TODO: insert our event handlers *)
+  Wl.Signal.add (Keyboard.Events.modifiers keyboard) modifiers
+    keyboard_handle_modifiers;
+  Wl.Signal.add (Keyboard.Events.key keyboard) key
+    keyboard_handle_key;
 
   st.keyboards <- tinywl_keyboard :: st.keyboards;
   ()
