@@ -91,7 +91,10 @@ let focus_view st view _listener surf =
     (Keyboard.num_keycodes keyboard)
     (Keyboard.modifiers keyboard)
 
-let keyboard_handle_modifiers _ _keyboard = ()
+let keyboard_handle_modifiers st device _ keyboard =
+  let _ = Seat.set_keyboard st.seat device in
+  let _ = Seat.keyboard_notify_modifiers st.seat (Keyboard.modifiers keyboard) in
+  ()
 
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
   begin match Xdg_surface.role surf with
@@ -149,14 +152,7 @@ let server_cursor_frame _st _ _ =
 
 let keyboard_handle_key _ _key_evt = ()
 
-let server_new_keyboard st (keyboard: Keyboard.t) =
-  let modifiers = Wl.Listener.create () in
-  let key = Wl.Listener.create () in
-  let tinywl_keyboard = {
-    device = keyboard;
-    modifiers = modifiers;
-    key = key;
-  } in
+let server_new_keyboard_set_settings (keyboard: Keyboard.t) =
   let xkb_context = match Xkbcommon.Context.create () with
     | Some ctx -> ctx
     | None -> failwith "Xkbcommon.Context.create"
@@ -169,23 +165,34 @@ let server_new_keyboard st (keyboard: Keyboard.t) =
   (* Is this for some reference counting stuff?????? *)
   let _ = Xkbcommon.Keymap.unref keymap in
   let _ = Xkbcommon.Context.unref xkb_context in
-  let _ = Keyboard.set_repeat_info keyboard 25 6000 in
+  Keyboard.set_repeat_info keyboard 25 6000
 
-  Wl.Signal.add (Keyboard.Events.modifiers keyboard) modifiers
-    keyboard_handle_modifiers;
-  Wl.Signal.add (Keyboard.Events.key keyboard) key
-    keyboard_handle_key;
+let server_new_keyboard st (device: Input_device.t) =
+  match Input_device.typ device with
+  | Input_device.Keyboard keyboard ->
+     server_new_keyboard_set_settings keyboard;
+     let modifiers = Wl.Listener.create () in
+     let key = Wl.Listener.create () in
+     Wl.Signal.add (Keyboard.Events.modifiers keyboard) modifiers
+       (keyboard_handle_modifiers st device);
+     Wl.Signal.add (Keyboard.Events.key keyboard) key
+       keyboard_handle_key;
+     let tinywl_keyboard = {
+       device = keyboard;
+       modifiers = modifiers;
+       key = key;
+     } in
 
-  st.keyboards <- tinywl_keyboard :: st.keyboards;
-  ()
+     st.keyboards <- tinywl_keyboard :: st.keyboards;
+  | _ -> ()
 
 let server_new_pointer st (pointer: Input_device.t) =
   Cursor.attach_input_device st.cursor pointer
 
 let server_new_input st _ (device: Input_device.t) =
   begin match Input_device.typ device with
-  | Input_device.Keyboard keyboard ->
-    server_new_keyboard st keyboard
+  | Input_device.Keyboard _ ->
+    server_new_keyboard st device
   | Input_device.Pointer _ ->
     server_new_pointer st device
   | _ ->
