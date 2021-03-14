@@ -147,9 +147,23 @@ let server_cursor_axis _st _ _ =
 let server_cursor_frame _st _ _ =
   failwith "server_cursor_frame"
 
-let handle_keybinding _st _sym =
+let handle_keybinding st sym =
+  if sym == Xkbcommon.Keysyms._Escape
+  then
+    let () = Wl.Display.terminate st.display in
+    true
+  else if sym == Xkbcommon.Keysyms._F1
+  then
+    match st.views with
+    | [] -> true
+    | [_] -> true
+    | (x :: y :: xs) ->
+       let () = focus_view st y y.listener y.surface in
+       st.views <- y :: List.append xs [x];
+       true
+  else false
 
-let keyboard_handle_key st keyboard _ key_evt =
+let keyboard_handle_key st keyboard device _ key_evt =
   let keycode = Keyboard.Event_key.keycode key_evt in
   let syms = Xkbcommon.State.key_get_syms (Keyboard.xkb_state keyboard) keycode in
   let modifiers = Keyboard.get_modifiers keyboard in
@@ -158,9 +172,11 @@ let keyboard_handle_key st keyboard _ key_evt =
     then List.fold_left (fun _ sym -> handle_keybinding st sym) false syms
     else false
   in
-  if not handled
-  then
-  else ()
+  if handled
+  then ()
+  else
+    let () = Seat.set_keyboard st.seat device in
+    Seat.keyboard_notify_key st.seat key_evt
 
 let server_new_keyboard_set_settings (keyboard: Keyboard.t) =
   let xkb_context = match Xkbcommon.Context.create () with
@@ -186,7 +202,7 @@ let server_new_keyboard st (device: Input_device.t) =
      Wl.Signal.add (Keyboard.Events.modifiers keyboard) modifiers
        (keyboard_handle_modifiers st device);
      Wl.Signal.add (Keyboard.Events.key keyboard) key
-       (keyboard_handle_key st keyboard);
+       (keyboard_handle_key st keyboard device);
      let tinywl_keyboard = {
        device = keyboard;
        modifiers = modifiers;
