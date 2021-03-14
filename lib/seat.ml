@@ -73,3 +73,10 @@ let keyboard_notify_modifiers =
 
 let keyboard_notify_enter =
   Bindings.wlr_seat_keyboard_notify_enter
+
+let keyboard_notify_key seat evt =
+  Bindings.wlr_seat_keyboard_notify_key
+    seat
+    (Keyboard.Event_key.time_msec evt)
+    (Unsigned.UInt32.of_int (Keyboard.Event_key.keycode evt))
+    (coerce Types.Key_state.t uint32_t (Keyboard.Event_key.state evt))

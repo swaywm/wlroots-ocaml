@@ -309,6 +309,9 @@ struct
        @-> wlr_keyboard_modifiers_p
        @-> returning void)
 
+  let wlr_seat_keyboard_notify_key = foreign "wlr_seat_keyboard_notify_key"
+      (wlr_seat_p @-> uint32_t @-> uint32_t @-> uint32_t @-> returning void)
+
   (* wlr_log *)
 
   (* TODO *)
