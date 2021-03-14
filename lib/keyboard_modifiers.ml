@@ -8,7 +8,7 @@ type t = Types.Keyboard_modifiers.t ptr
 include Ptr
 
 let has_alt modifiers =
-  Ctypes.coerce int64_t bool
-    (Signed.Int64.logand
-       (Ctypes.coerce uint32_t int64_t modifiers)
-       Types.Keyboard_modifier._WLR_MODIFIER_ALT)
+  Signed.Int64.of_int 0 !=
+    Signed.Int64.logand
+       (Unsigned.UInt32.to_int64 modifiers)
+       Types.Keyboard_modifier._WLR_MODIFIER_ALT
