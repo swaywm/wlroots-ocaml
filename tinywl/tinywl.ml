@@ -97,42 +97,40 @@ let keyboard_handle_modifiers st device _ keyboard =
   ()
 
 let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
-  (* TODO: Only do the rest if the surface is toplevel *)
   begin match Xdg_surface.role surf with
-    | None -> print_endline "Got None"
-    | TopLevel -> print_endline "Got TopLevel"
-    | Popup -> print_endline "Got Popup"
-  end;
+    | None -> ()
+    | Popup -> ()
+    | TopLevel ->
+      let view_listener = Wl.Listener.create () in
 
-  let view_listener = Wl.Listener.create () in
+      let view = {
+        surface = surf;
+        listener = view_listener;
+        mapped = false;
+      } in
 
-  let view = {
-    surface = surf;
-    listener = view_listener;
-    mapped = false;
-  } in
+      st.views <- view :: st.views;
 
-  st.views <- view :: st.views;
+      (* We want to add the signal handlers for the surface events using Wl.Signal.add *)
+      Wl.Signal.add (Xdg_surface.Events.destroy surf) view_listener
+        (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
 
-  (* We want to add the signal handlers for the surface events using Wl.Signal.add *)
-  Wl.Signal.add (Xdg_surface.Events.destroy surf) view_listener
-    (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
+      (* Might need to make mapped true in this guy *)
+      Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
+        (focus_view st view) ;
+      Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
+        (fun _ _ -> view.mapped <- false;);
 
-  (* Might need to make mapped true in this guy *)
-  Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
-    (focus_view st view) ;
-  Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
-    (fun _ _ -> view.mapped <- false;);
+      (* cotd *)
+      let toplevel = Xdg_surface.toplevel surf in
 
-  (* cotd *)
-  let toplevel = Xdg_surface.toplevel surf in
-
-  Wl.Signal.add (Xdg_toplevel.Events.request_move toplevel) view_listener
-    (fun _ _ -> begin_interactive st view Move);
-  Wl.Signal.add (Xdg_toplevel.Events.request_resize toplevel) view_listener
-    (* FIXME: Need to actually get the edges from the event to pass with Resize *)
-    (fun _ _ -> begin_interactive st view (Resize (Unsigned.UInt32.of_int 0)));
-  ()
+      Wl.Signal.add (Xdg_toplevel.Events.request_move toplevel) view_listener
+        (fun _ _ -> begin_interactive st view Move);
+      Wl.Signal.add (Xdg_toplevel.Events.request_resize toplevel) view_listener
+        (* FIXME: Need to actually get the edges from the event to pass with Resize *)
+        (fun _ _ -> begin_interactive st view (Resize (Unsigned.UInt32.of_int 0)));
+      ()
+  end
 
 let server_cursor_motion _st _ _ =
   failwith "server_cursor_motion"
