@@ -4,6 +4,22 @@ type view = {
   surface : Xdg_surface.t;
   listener: Wl.Listener.t;
   mutable mapped: bool;
+  mutable x: int;
+  mutable y: int;
+}
+
+type box = {
+  x: int;
+  y: int;
+  width: int;
+  height: int;
+}
+
+type grab = {
+  view: view;
+  x: float;
+  y: float;
+  geobox: box;
 }
 
 type keyboard = {
@@ -18,6 +34,10 @@ type tinywl_output = {
   frame : Wl.Listener.t;
 }
 
+type cursor_mode = Passthrough
+                 | Move
+                 | Resize of Unsigned.uint32
+
 type tinywl_server = {
   display : Wl.Display.t;
   backend : Backend.t;
@@ -25,16 +45,15 @@ type tinywl_server = {
   output_layout : Output_layout.t;
   seat : Seat.t;
   cursor : Cursor.t;
+  cursor_mode : cursor_mode;
   mutable outputs : tinywl_output list;
   mutable views : view list;
   mutable keyboards : keyboard list;
 
   new_output : Wl.Listener.t;
-}
 
-type cursor_mode = Passthrough
-                 | Move
-                 | Resize of Unsigned.uint32
+  grab: grab option;
+}
 
 let default_xkb_rules : Xkbcommon.Rule_names.t = {
   rules = None;
@@ -107,6 +126,8 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
         surface = surf;
         listener = view_listener;
         mapped = false;
+        x = 0;
+        y = 0;
       } in
 
       st.views <- view :: st.views;
@@ -132,8 +153,27 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
       ()
   end
 
-let server_cursor_motion _st _ _ =
-  failwith "server_cursor_motion"
+let process_cursor_move st _time =
+  Option.iter (fun grab ->
+      grab.view.x <- truncate (Float.sub (Cursor.x st.cursor) grab.x);
+      grab.view.y <- truncate (Float.sub (Cursor.y st.cursor) grab.y);
+    ) st.grab
+
+let process_cursor_motion st time =
+  begin match st.cursor_mode with
+  | Move ->
+    process_cursor_move st time
+  | Resize _x ->
+    process_cursor_resize st time
+  | Passthrough ->
+    failwith "Write it!"
+  end
+
+let server_cursor_motion st _ (evt: Event_pointer_motion.t) =
+  Cursor.move st.cursor
+    (Event_pointer_motion.device evt)
+    (Event_pointer_motion.delta_x evt)
+    (Event_pointer_motion.delta_y evt)
 
 let server_cursor_motion_absolute _st _ _ =
   failwith "server_cursor_motion_absolute"
