@@ -201,13 +201,6 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
-  module Event_pointer_motion = struct
-    type t = [`event_pointer_motion] Ctypes.structure
-    let t : t typ = structure "wlr_event_pointer_motion"
-
-    let () = seal t
-  end
-
   module Event_pointer_motion_absolute = struct
     type t = [`event_pointer_motion_absolute] Ctypes.structure
     let t : t typ = structure "wlr_event_pointer_motion_absolute"
@@ -290,6 +283,18 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let events_destroy = field t "events.destroy" Wl_signal.t
 
     (* TODO *)
+    let () = seal t
+  end
+
+  module Event_pointer_motion = struct
+    type t = [`event_pointer_motion] Ctypes.structure
+    let t : t typ = structure "wlr_event_pointer_motion"
+
+    let device = field t "device" (ptr Input_device.t)
+    let time_msec = field t "time_msec" uint32_t
+    let delta_x = field t "delta_x" double
+    let delta_y = field t "delta_y" double
+
     let () = seal t
   end
 

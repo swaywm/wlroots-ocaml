@@ -275,6 +275,10 @@ struct
     foreign "wlr_cursor_set_surface"
       (wlr_cursor_p @-> wlr_surface_p @-> int @-> int @-> returning void)
 
+  let wlr_cursor_move =
+    foreign "wlr_cursor_move"
+      (wlr_cursor_p @-> wlr_input_device_p @-> double @-> double @-> returning void)
+
   (* wlr_xcursor_manager *)
 
   let wlr_xcursor_manager_p = ptr Xcursor_manager.t

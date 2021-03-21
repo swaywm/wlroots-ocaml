@@ -23,6 +23,7 @@
            output
            keyboard
            pointer
+           event_pointer_motion
            touch
            tablet_tool
            tablet_pad
