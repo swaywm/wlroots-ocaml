@@ -7,6 +7,10 @@ module Types = Wlroots_ffi_f.Ffi.Types
 type t = Types.Cursor.t ptr
 include Ptr
 
+let x = getfield Types.Cursor.x
+let y = getfield Types.Cursor.y
+
+
 let create = Bindings.wlr_cursor_create
 let attach_output_layout = Bindings.wlr_cursor_attach_output_layout
 let attach_input_device = Bindings.wlr_cursor_attach_input_device

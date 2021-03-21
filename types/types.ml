@@ -388,6 +388,9 @@ module Make (S : Cstubs_structs.TYPE) = struct
     type t = [`cursor] Ctypes.structure
     let t : t typ = structure "wlr_cursor"
 
+    let x = field t "x" double
+    let y = field t "y" double
+
     let events_motion = field t "events.motion" Wl_signal.t
     let events_motion_absolute = field t "events.motion_absolute" Wl_signal.t
     let events_button = field t "events.button" Wl_signal.t

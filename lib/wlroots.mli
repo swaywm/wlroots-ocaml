@@ -284,6 +284,9 @@ end
 module Cursor : sig
   include Comparable0
 
+  val x : t -> float
+  val y : t -> float
+
   val create : unit -> t
   val attach_output_layout : t -> Output_layout.t -> unit
   val attach_input_device : t -> Input_device.t -> unit
