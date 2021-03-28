@@ -166,6 +166,10 @@ module Pointer : sig
   end
 end
 
+module Edges : sig
+  type t = None | Top | Bottom | Left | Right
+end
+
 module Touch : sig
   include Comparable0
 end

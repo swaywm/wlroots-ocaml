@@ -24,6 +24,7 @@
            keyboard
            pointer
            event_pointer_motion
+           edges
            touch
            tablet_tool
            tablet_pad

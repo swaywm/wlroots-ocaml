@@ -222,6 +222,25 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Edges = struct
+    type t = None | Top | Bottom | Left | Right
+
+    let _WLR_EDGE_NONE = constant "WLR_EDGE_NONE" int64_t
+    let _WLR_EDGE_TOP = constant "WLR_EDGE_TOP" int64_t
+    let _WLR_EDGE_BOTTOM = constant "WLR_EDGE_BOTTOM" int64_t
+    let _WLR_EDGE_LEFT = constant "WLR_EDGE_LEFT" int64_t
+    let _WLR_EDGE_RIGHT = constant "WLR_EDGE_RIGHT" int64_t
+
+    let t : t typ =
+      enum "wlr_edges" [
+        None, _WLR_EDGE_NONE;
+        Top, _WLR_EDGE_TOP;
+        Bottom, _WLR_EDGE_BOTTOM;
+        Left, _WLR_EDGE_LEFT;
+        Right, _WLR_EDGE_RIGHT;
+      ]
+  end
+
   module Touch = struct
     type t = [`touch] Ctypes.structure
     let t : t typ = structure "wlr_touch"
