@@ -13,6 +13,7 @@ type grab = {
   x: float;
   y: float;
   geobox: Box.t;
+  resize_edges: Edges.t;
 }
 
 type keyboard = {
@@ -30,6 +31,8 @@ type tinywl_output = {
 type cursor_mode = Passthrough
                  | Move
                  | Resize of Unsigned.uint32
+
+let discard _ = ()
 
 type tinywl_server = {
   display : Wl.Display.t;
@@ -90,7 +93,6 @@ let focus_view st view _listener surf =
         else Xdg_surface.from_surface prev
       )
   in
-  let discard _ = () in
   Option.iter (fun s -> discard (Xdg_surface.toplevel_set_activated s false))
     to_deactivate;
   let keyboard = Seat.Keyboard_state.keyboard keyboard_state in
@@ -150,6 +152,54 @@ let process_cursor_move st _time =
   Option.iter (fun grab ->
       grab.view.x <- truncate (Float.sub (Cursor.x st.cursor) grab.x);
       grab.view.y <- truncate (Float.sub (Cursor.y st.cursor) grab.y);
+    ) st.grab
+
+let process_cursor_resize st _time =
+  Option.iter (fun grab ->
+      let view = grab.view in
+      let border_x = Float.sub (Cursor.x st.cursor) grab.x in
+      let border_y = Float.sub (Cursor.y st.cursor) grab.y in
+
+      let (new_top, new_bottom) =
+      match grab.resize_edges with
+        | Edges.Top ->
+          let new_top = border_y in
+          let new_bottom = grab.geobox.y + grab.geobox.height in
+          if new_top >= Float.of_int new_bottom
+          then (new_bottom - 1, new_bottom)
+          else (truncate new_top, new_bottom)
+      | Edges.Bottom ->
+          let new_top = grab.geobox.y in
+          let new_bottom = border_y in
+          if new_bottom <= Float.of_int new_top
+          then (new_top, new_top + 1)
+          else (new_top, truncate new_bottom)
+      | _ -> (grab.geobox.y, grab.geobox.y + grab.geobox.height)
+      in
+      let (new_left, new_right) =
+        match grab.resize_edges with
+        | Edges.Left ->
+          let new_left = border_x in
+          let new_right = grab.geobox.x + grab.geobox.width in
+          if new_left >= Float.of_int new_right
+          then (new_right - 1, new_right)
+          else (truncate new_left, new_right)
+        | Edges.Right ->
+          let new_left = grab.geobox.x in
+          let new_right = border_x in
+          if new_right <= Float.of_int new_left
+          then (new_left, new_left + 1)
+          else (new_left, truncate new_right)
+        | _ -> (grab.geobox.x, grab.geobox.x + grab.geobox.width) in
+
+      let geobox = Xdg_surface.get_geometry view.surface in
+      view.x <- new_left - geobox.x;
+      view.y <- new_top - geobox.y;
+
+      let new_width = new_right - new_left in
+      let new_height = new_bottom - new_top in
+
+      discard (Xdg_surface.toplevel_set_size view.surface, new_width, new_height)
     ) st.grab
 
 let process_cursor_motion st time =
@@ -316,7 +366,8 @@ let () =
   let new_input = Wl.Listener.create () in
   let request_cursor = Wl.Listener.create () in
   let st = { display; backend; renderer; output_layout; new_output; seat;
-             cursor; outputs = []; views = []; keyboards = [] } in
+             cursor; cursor_mode = Passthrough; outputs = []; views = [];
+             keyboards = []; grab = None } in
 
   Wl.Signal.add (Backend.signal_new_output backend) new_output
     (server_new_output st);
