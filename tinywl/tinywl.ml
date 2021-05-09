@@ -42,6 +42,7 @@ type tinywl_server = {
   seat : Seat.t;
   cursor : Cursor.t;
   cursor_mode : cursor_mode;
+  cursor_mgr : Xcursor_manager.t;
   mutable outputs : tinywl_output list;
   mutable views : view list;
   mutable keyboards : keyboard list;
@@ -202,6 +203,14 @@ let process_cursor_resize st _time =
       discard (Xdg_surface.toplevel_set_size view.surface, new_width, new_height)
     ) st.grab
 
+let view_at lx ly (view : view) =
+  let view_sx = Float.sub lx (Float.of_int view.x) in
+  let view_sy = Float.sub ly (Float.of_int view.y) in
+  Xdg_surface.surface_at view.surface view_sx view_sy
+
+let desktop_view_at cursor view =
+  view_at (Cursor.x cursor) (Cursor.y cursor) view
+
 let process_cursor_motion st time =
   begin match st.cursor_mode with
   | Move ->
@@ -209,14 +218,25 @@ let process_cursor_motion st time =
   | Resize _x ->
     process_cursor_resize st time
   | Passthrough ->
-    failwith "Write it!"
+    let view = List.find_map (desktop_view_at st.cursor) st.views in
+    match view with
+    | None ->
+      Xcursor_manager.set_cursor_image st.cursor_mgr "left_ptr" st.cursor;
+      Seat.pointer_clear_focus st.seat
+    | Some (surf, sub_x, sub_y) ->
+      let focus_changed = (Seat.Pointer_state.focused_surface (Seat.pointer_state st.seat)) != surf in
+      Seat.pointer_notify_enter st.seat surf sub_x sub_y;
+      if not focus_changed
+      then Seat.pointer_notify_motion st.seat time sub_x sub_y
+      else ()
   end
 
 let server_cursor_motion st _ (evt: Event_pointer_motion.t) =
   Cursor.move st.cursor
     (Event_pointer_motion.device evt)
     (Event_pointer_motion.delta_x evt)
-    (Event_pointer_motion.delta_y evt)
+    (Event_pointer_motion.delta_y evt);
+  process_cursor_motion st (Event_pointer_motion.time_msec evt)
 
 let server_cursor_motion_absolute _st _ _ =
   failwith "server_cursor_motion_absolute"
@@ -366,8 +386,8 @@ let () =
   let new_input = Wl.Listener.create () in
   let request_cursor = Wl.Listener.create () in
   let st = { display; backend; renderer; output_layout; new_output; seat;
-             cursor; cursor_mode = Passthrough; outputs = []; views = [];
-             keyboards = []; grab = None } in
+             cursor; cursor_mode = Passthrough; cursor_mgr; outputs = [];
+             views = []; keyboards = []; grab = None } in
 
   Wl.Signal.add (Backend.signal_new_output backend) new_output
     (server_new_output st);
