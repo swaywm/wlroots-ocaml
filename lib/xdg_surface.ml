@@ -27,6 +27,11 @@ let from_surface (surface : Surface.t) : t option =
     Some (Bindings.wlr_xdg_surface_from_wlr_surface surface)
   else None
 
+let get_geometry (surface : t) =
+  let box = make Types.Box.t in
+  let () = Bindings.wlr_xdg_surface_get_geometry surface (addr box) in
+  Box.of_c (addr box)
+
 let toplevel_set_activated =
   Bindings.wlr_xdg_toplevel_set_activated
 

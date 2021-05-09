@@ -264,6 +264,7 @@ module Xdg_surface : sig
   val toplevel : t -> Xdg_toplevel.t
 
   val from_surface : Surface.t -> t option
+  val get_geometry : t -> Box.t
   val toplevel_set_activated : t -> bool -> Unsigned.uint32
 
   module Events : sig
