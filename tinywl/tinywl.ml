@@ -8,18 +8,11 @@ type view = {
   mutable y: int;
 }
 
-type box = {
-  x: int;
-  y: int;
-  width: int;
-  height: int;
-}
-
 type grab = {
   view: view;
   x: float;
   y: float;
-  geobox: box;
+  geobox: Box.t;
 }
 
 type keyboard = {
