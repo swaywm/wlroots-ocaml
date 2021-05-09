@@ -298,6 +298,9 @@ struct
   let wlr_xcursor_manager_load = foreign "wlr_xcursor_manager_load"
       (wlr_xcursor_manager_p @-> float @-> returning int)
 
+  let wlr_xcursor_manager_set_cursor_image = foreign "wlr_xcursor_manager_set_cursor_image"
+      (wlr_xcursor_manager_p @-> string @-> wlr_cursor_p @-> returning void)
+
   (* wlr_seat *)
 
   let wlr_seat_p = ptr Seat.t

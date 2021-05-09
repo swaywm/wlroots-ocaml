@@ -312,6 +312,7 @@ module Xcursor_manager : sig
 
   val create : string option -> int -> t
   val load : t -> float -> int
+  val set_cursor_image : t -> string -> Cursor.t -> unit
 end
 
 module Seat : sig
