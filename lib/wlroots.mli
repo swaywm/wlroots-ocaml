@@ -266,6 +266,7 @@ module Xdg_surface : sig
   val from_surface : Surface.t -> t option
   val get_geometry : t -> Box.t
   val toplevel_set_activated : t -> bool -> Unsigned.uint32
+  val toplevel_set_size : t -> int -> int -> Unsigned.uint32
 
   module Events : sig
     val destroy : t -> t Wl.Signal.t

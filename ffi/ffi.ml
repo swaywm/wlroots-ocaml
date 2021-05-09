@@ -255,6 +255,9 @@ struct
   let wlr_xdg_toplevel_set_activated = foreign "wlr_xdg_toplevel_set_activated"
       (wlr_xdg_surface_p @-> bool @-> returning uint32_t)
 
+  let wlr_xdg_toplevel_set_size = foreign "wlr_xdg_toplevel_set_size"
+      (wlr_xdg_surface_p @-> int @-> int @-> returning uint32_t)
+
   (* wlr_input_device *)
 
   let wlr_input_device_p = ptr Input_device.t

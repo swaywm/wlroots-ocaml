@@ -35,6 +35,9 @@ let get_geometry (surface : t) =
 let toplevel_set_activated =
   Bindings.wlr_xdg_toplevel_set_activated
 
+let toplevel_set_size =
+  Bindings.wlr_xdg_toplevel_set_size
+
 module Events = struct
   let destroy (surface : t) : t Wl.Signal.t = {
     c = surface |-> Types.Xdg_surface.events_destroy;
