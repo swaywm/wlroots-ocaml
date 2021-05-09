@@ -32,6 +32,14 @@ let get_geometry (surface : t) =
   let () = Bindings.wlr_xdg_surface_get_geometry surface (addr box) in
   Box.of_c (addr box)
 
+let surface_at (surface : t) sx sy =
+  let sub_x = allocate double 0.0 in
+  let sub_y = allocate double 0.0 in
+  let found_surf = Bindings.wlr_xdg_surface_surface_at surface sx sy sub_x sub_y in
+  if is_null found_surf
+  then None
+  else Some (found_surf, !@ sub_x, !@ sub_y)
+
 let toplevel_set_activated =
   Bindings.wlr_xdg_toplevel_set_activated
 

@@ -250,6 +250,9 @@ struct
   let wlr_xdg_surface_get_geometry = foreign "wlr_xdg_surface_get_geometry"
       (wlr_xdg_surface_p @-> wlr_box_p @-> returning void)
 
+  let wlr_xdg_surface_surface_at = foreign "wlr_xdg_surface_surface_at"
+      (wlr_xdg_surface_p @-> double @-> double @-> ptr double @-> ptr double @-> returning wlr_surface_p)
+
   (* wlr_xdg_toplevel *)
 
   let wlr_xdg_toplevel_set_activated = foreign "wlr_xdg_toplevel_set_activated"
