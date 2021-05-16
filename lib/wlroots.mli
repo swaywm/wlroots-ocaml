@@ -213,6 +213,7 @@ module Event_pointer_button : sig
   include Comparable0
 
   val time_msec : t -> Unsigned.uint32
+  val button : t -> Unsigned.uint32
 end
 
 module Renderer : sig

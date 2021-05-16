@@ -9,3 +9,4 @@ let t = ptr Types.Event_pointer_button.t
 include Ptr
 
 let time_msec = getfield Types.Event_pointer_button.time_msec
+let button = getfield Types.Event_pointer_button.button
