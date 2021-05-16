@@ -7,6 +7,8 @@ module Types = Wlroots_ffi_f.Ffi.Types
 type t = Types.Pointer.t ptr
 include Ptr
 
+type button_state = Types.Button_state.t = Released | Pressed
+
 module Event_axis = struct
   type t = Types.Event_pointer_axis.t ptr
   let t = ptr Types.Event_pointer_axis.t

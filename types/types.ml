@@ -135,6 +135,18 @@ module Make (S : Cstubs_structs.TYPE) = struct
     ]
   end
 
+  module Button_state = struct
+    type t = Released | Pressed
+
+    let _RELEASED = constant "WLR_BUTTON_RELEASED" int64_t
+    let _PRESSED = constant "WLR_BUTTON_PRESSED" int64_t
+
+    let t : t typ = enum "wlr_button_state" [
+      Released, _RELEASED;
+      Pressed, _PRESSED;
+    ]
+  end
+
   (* This is an array of unit32_t keycodes: uint32_t keycodes[] *)
   module Keycodes = struct
     type t = unit ptr
