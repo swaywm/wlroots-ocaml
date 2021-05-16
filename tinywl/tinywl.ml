@@ -238,8 +238,14 @@ let server_cursor_motion st _ (evt: Event_pointer_motion.t) =
     (Event_pointer_motion.delta_y evt);
   process_cursor_motion st (Event_pointer_motion.time_msec evt)
 
-let server_cursor_motion_absolute _st _ _ =
-  failwith "server_cursor_motion_absolute"
+let server_cursor_motion_absolute st _ (evt: Event_pointer_motion_absolute.t) =
+  Cursor.warp_absolute
+    st.cursor
+    (Event_pointer_motion_absolute.device evt)
+    (Event_pointer_motion_absolute.x evt)
+    (Event_pointer_motion_absolute.y evt);
+  process_cursor_motion st (Event_pointer_motion_absolute.time_msec evt)
+
 
 let server_cursor_button _st _ _ =
   failwith "server_cursor_button"
