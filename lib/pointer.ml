@@ -11,6 +11,8 @@ module Event_motion_absolute = struct
   type t = Types.Event_pointer_motion_absolute.t ptr
   let t = ptr Types.Event_pointer_motion_absolute.t
   let device = getfield Types.Event_pointer_motion_absolute.device
+  let x = getfield Types.Event_pointer_motion_absolute.x
+  let y = getfield Types.Event_pointer_motion_absolute.y
   include Ptr
 end
 

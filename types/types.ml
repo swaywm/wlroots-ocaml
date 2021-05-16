@@ -303,6 +303,8 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_event_pointer_motion_absolute"
 
     let device = field t "device" (ptr Input_device.t)
+    let x = field t "x" double
+    let y = field t "y" double
     let () = seal t
   end
 
