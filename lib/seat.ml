@@ -80,3 +80,6 @@ let keyboard_notify_key seat evt =
     (Keyboard.Event_key.time_msec evt)
     (Unsigned.UInt32.of_int (Keyboard.Event_key.keycode evt))
     (coerce Types.Key_state.t uint32_t (Keyboard.Event_key.state evt))
+
+let pointer_notify_enter =
+  Bindings.wlr_seat_pointer_notify_enter

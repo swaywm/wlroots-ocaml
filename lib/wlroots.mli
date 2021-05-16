@@ -357,6 +357,8 @@ module Seat : sig
     t -> Surface.t -> Keycodes.t -> Unsigned.size_t -> Keyboard_modifiers.t -> unit
   val keyboard_notify_key :
     t -> Keyboard.Event_key.t -> unit
+  val pointer_notify_enter :
+    t -> Surface.t -> float -> float -> unit
 end
 
 module Log : sig
