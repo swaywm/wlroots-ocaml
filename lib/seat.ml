@@ -35,6 +35,8 @@ module Pointer_state = struct
 
   let focused_client (st: t) =
     st |->> Types.Seat_pointer_state.focused_client
+  let focused_surface =
+    getfield Types.Seat_pointer_state.focused_surface
 end
 
 module Keyboard_state = struct

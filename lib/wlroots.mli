@@ -326,6 +326,7 @@ module Seat : sig
     include Comparable0
 
     val focused_client : t -> Client.t
+    val focused_surface : t -> Surface.t
   end
 
   module Keyboard_state : sig

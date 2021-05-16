@@ -435,6 +435,8 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_seat_pointer_state"
     let focused_client = field t "focused_client"
         (ptr Seat_client.t)
+    let focused_surface = field t "focused_surface"
+        (ptr Surface.t)
     let () = seal t
   end
 
