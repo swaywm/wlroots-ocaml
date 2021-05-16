@@ -205,6 +205,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     type t = [`event_pointer_button] Ctypes.structure
     let t : t typ = structure "wlr_event_pointer_button"
 
+    let time_msec = field t "time_msec" uint32_t
     let () = seal t
   end
 
