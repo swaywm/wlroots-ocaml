@@ -155,6 +155,7 @@ module Pointer : sig
 
   module Event_motion_absolute : sig
     include Comparable0
+    val device : t -> Input_device.t
   end
 
   module Event_button : sig

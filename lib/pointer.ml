@@ -10,6 +10,7 @@ include Ptr
 module Event_motion_absolute = struct
   type t = Types.Event_pointer_motion_absolute.t ptr
   let t = ptr Types.Event_pointer_motion_absolute.t
+  let device = getfield Types.Event_pointer_motion_absolute.device
   include Ptr
 end
 
