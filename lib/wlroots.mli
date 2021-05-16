@@ -216,6 +216,7 @@ module Event_pointer_button : sig
 
   val time_msec : t -> Unsigned.uint32
   val button : t -> Unsigned.uint32
+  val state : t -> Pointer.button_state
 end
 
 module Renderer : sig

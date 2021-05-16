@@ -10,3 +10,4 @@ include Ptr
 
 let time_msec = getfield Types.Event_pointer_button.time_msec
 let button = getfield Types.Event_pointer_button.button
+let state = getfield Types.Event_pointer_button.state

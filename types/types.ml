@@ -219,6 +219,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
 
     let time_msec = field t "time_msec" uint32_t
     let button = field t "button" uint32_t
+    let state = field t "state" Button_state.t
     let () = seal t
   end
 
