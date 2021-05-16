@@ -305,6 +305,7 @@ module Cursor : sig
   val signal_button : t -> Pointer.Event_button.t Wl.Signal.t
   val signal_axis : t -> Pointer.Event_axis.t Wl.Signal.t
   val signal_frame : t -> unit (* ? *) Wl.Signal.t
+  val warp_absolute : t -> Input_device.t -> float -> float -> unit
 end
 
 module Xcursor_manager : sig

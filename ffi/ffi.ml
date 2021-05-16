@@ -288,6 +288,9 @@ struct
     foreign "wlr_cursor_move"
       (wlr_cursor_p @-> wlr_input_device_p @-> double @-> double @-> returning void)
 
+  let wlr_cursor_warp_absolute = foreign "wlr_cursor_warp_absolute"
+      (wlr_cursor_p @-> wlr_input_device_p @-> double @-> double @-> returning void)
+
   (* wlr_xcursor_manager *)
 
   let wlr_xcursor_manager_p = ptr Xcursor_manager.t

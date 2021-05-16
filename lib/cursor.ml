@@ -42,3 +42,5 @@ let signal_frame (cursor: t) : unit Wl.Signal.t = {
   c = cursor |-> Types.Cursor.events_frame;
   typ = void;
 }
+
+let warp_absolute = Bindings.wlr_cursor_warp_absolute
