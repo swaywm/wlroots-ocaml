@@ -359,6 +359,8 @@ module Seat : sig
     t -> Keyboard.Event_key.t -> unit
   val pointer_notify_enter :
     t -> Surface.t -> float -> float -> unit
+  val pointer_clear_focus :
+    t -> unit
 end
 
 module Log : sig

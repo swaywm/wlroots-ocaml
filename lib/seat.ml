@@ -83,3 +83,6 @@ let keyboard_notify_key seat evt =
 
 let pointer_notify_enter =
   Bindings.wlr_seat_pointer_notify_enter
+
+let pointer_clear_focus =
+  Bindings.wlr_seat_pointer_clear_focus
