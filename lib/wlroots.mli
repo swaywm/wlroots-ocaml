@@ -362,6 +362,8 @@ module Seat : sig
     t -> Surface.t -> float -> float -> unit
   val pointer_clear_focus :
     t -> unit
+  val pointer_notify_motion :
+    t -> Unsigned.uint32 -> float -> float -> unit
 end
 
 module Log : sig

@@ -334,6 +334,9 @@ struct
   let wlr_seat_pointer_clear_focus = foreign "wlr_seat_pointer_clear_focus"
       (wlr_seat_p @-> returning void)
 
+  let wlr_seat_pointer_notify_motion = foreign "wlr_seat_pointer_notify_motion"
+      (wlr_seat_p @-> uint32_t @-> double @-> double @-> returning void)
+
   (* wlr_log *)
 
   (* TODO *)
