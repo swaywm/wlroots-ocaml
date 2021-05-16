@@ -11,3 +11,4 @@ include Ptr
 let device = getfield Types.Event_pointer_motion_absolute.device
 let x = getfield Types.Event_pointer_motion_absolute.x
 let y = getfield Types.Event_pointer_motion_absolute.y
+let time_msec = getfield Types.Event_pointer_motion_absolute.time_msec

@@ -210,6 +210,7 @@ module Event_pointer_motion_absolute : sig
   val device : t -> Input_device.t
   val x : t -> float
   val y : t -> float
+  val time_msec : t -> Unsigned.uint32
 end
 
 module Renderer : sig

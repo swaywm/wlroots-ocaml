@@ -305,6 +305,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let device = field t "device" (ptr Input_device.t)
     let x = field t "x" double
     let y = field t "y" double
+    let time_msec = field t "time_msec" uint32_t
     let () = seal t
   end
 
