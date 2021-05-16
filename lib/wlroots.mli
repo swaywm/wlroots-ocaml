@@ -375,6 +375,8 @@ module Seat : sig
     t -> unit
   val pointer_notify_motion :
     t -> Unsigned.uint32 -> float -> float -> unit
+  val pointer_notify_button :
+    t -> Unsigned.uint32 -> Unsigned.uint32 -> Pointer.button_state -> Unsigned.uint32
 end
 
 module Log : sig

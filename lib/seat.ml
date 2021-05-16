@@ -91,3 +91,6 @@ let pointer_clear_focus =
 
 let pointer_notify_motion =
   Bindings.wlr_seat_pointer_notify_motion
+
+let pointer_notify_button =
+  Bindings.wlr_seat_pointer_notify_button

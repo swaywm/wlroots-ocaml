@@ -340,6 +340,9 @@ struct
   let wlr_seat_pointer_notify_motion = foreign "wlr_seat_pointer_notify_motion"
       (wlr_seat_p @-> uint32_t @-> double @-> double @-> returning void)
 
+  let wlr_seat_pointer_notify_button = foreign "wlr_seat_pointer_notify_button"
+      (wlr_seat_p @-> uint32_t @-> uint32_t @-> Button_state.t @-> returning uint32_t)
+
   (* wlr_log *)
 
   (* TODO *)
