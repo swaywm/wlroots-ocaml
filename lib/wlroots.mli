@@ -152,14 +152,6 @@ end
 module Pointer : sig
   include Comparable0
 
-
-  module Event_motion_absolute : sig
-    include Comparable0
-    val device : t -> Input_device.t
-    val x : t -> float
-    val y : t -> float
-  end
-
   module Event_button : sig
     include Comparable0
   end
@@ -210,6 +202,14 @@ module Event_pointer_motion : sig
   val time_msec : t -> Unsigned.uint32
   val delta_x : t -> float
   val delta_y : t -> float
+end
+
+module Event_pointer_motion_absolute : sig
+  include Comparable0
+
+  val device : t -> Input_device.t
+  val x : t -> float
+  val y : t -> float
 end
 
 module Renderer : sig
@@ -304,7 +304,7 @@ module Cursor : sig
   val move : t -> Input_device.t -> float -> float -> unit
 
   val signal_motion : t -> Event_pointer_motion.t Wl.Signal.t
-  val signal_motion_absolute : t -> Pointer.Event_motion_absolute.t Wl.Signal.t
+  val signal_motion_absolute : t -> Event_pointer_motion_absolute.t Wl.Signal.t
   val signal_button : t -> Pointer.Event_button.t Wl.Signal.t
   val signal_axis : t -> Pointer.Event_axis.t Wl.Signal.t
   val signal_frame : t -> unit (* ? *) Wl.Signal.t

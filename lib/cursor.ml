@@ -23,9 +23,9 @@ let signal_motion (cursor: t) : Event_pointer_motion.t Wl.Signal.t = {
 }
 
 let signal_motion_absolute (cursor: t) :
-  Pointer.Event_motion_absolute.t Wl.Signal.t = {
+  Event_pointer_motion_absolute.t Wl.Signal.t = {
   c = cursor |-> Types.Cursor.events_motion_absolute;
-  typ = Pointer.Event_motion_absolute.t;
+  typ = Event_pointer_motion_absolute.t;
 }
 
 let signal_button (cursor: t) : Pointer.Event_button.t Wl.Signal.t = {

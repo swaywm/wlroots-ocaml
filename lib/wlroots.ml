@@ -17,6 +17,7 @@ module Keyboard_modifiers = Keyboard_modifiers
 module Keycodes = Keycodes
 module Pointer = Pointer
 module Event_pointer_motion = Event_pointer_motion
+module Event_pointer_motion_absolute = Event_pointer_motion_absolute
 module Edges = Edges
 module Touch = Touch
 module Tablet_tool = Tablet_tool
