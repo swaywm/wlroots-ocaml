@@ -264,8 +264,14 @@ let server_cursor_button st _ (evt: Event_pointer_button.t) =
           (Xdg_surface.from_surface surf))
       found_view
 
-let server_cursor_axis _st _ _ =
-  failwith "server_cursor_axis"
+let server_cursor_axis st _ (evt : Event_pointer_axis.t) =
+  Seat.pointer_notify_axis
+    st.seat
+    (Event_pointer_axis.time_msec evt)
+    (Event_pointer_axis.orientation evt)
+    (Event_pointer_axis.delta evt)
+    (Event_pointer_axis.delta_discrete evt)
+    (Event_pointer_axis.source evt)
 
 let server_cursor_frame _st _ _ =
   failwith "server_cursor_frame"
