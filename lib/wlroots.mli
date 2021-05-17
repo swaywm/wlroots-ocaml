@@ -220,6 +220,7 @@ end
 module Event_pointer_axis : sig
   include Comparable0
 
+  val time_msec : t -> Unsigned.uint32
   val orientation : t -> Pointer.axis_orientation
   val delta : t -> float
   val delta_discrete : t -> Signed.Int32.t
