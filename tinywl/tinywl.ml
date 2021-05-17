@@ -84,7 +84,7 @@ let server_new_output st _ output =
 let begin_interactive _st (_view: view) (_mode: cursor_mode) =
   print_endline "Begin interactive"
 
-let focus_view st view _listener surf =
+let focus_view st view surf =
   let keyboard_state = Seat.keyboard_state st.seat in
   let prev_surface = Seat.Keyboard_state.focused_surface keyboard_state in
   let to_deactivate =
@@ -134,7 +134,9 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
 
       (* Might need to make mapped true in this guy *)
       Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
-        (focus_view st view) ;
+        (fun _ _ ->
+          view.mapped <- true;
+          focus_view st view surf);
       Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
         (fun _ _ -> view.mapped <- false;);
 
@@ -260,8 +262,7 @@ let server_cursor_button st _ (evt: Event_pointer_button.t) =
   else
     let found_view = desktop_view_at st.cursor st.views in
     Option.iter (fun (view, surf, _, _) ->
-        Option.iter (fun xdg_surf -> focus_view st view () xdg_surf)
-          (Xdg_surface.from_surface surf))
+        Option.iter (focus_view st view) (Xdg_surface.from_surface surf))
       found_view
 
 let server_cursor_axis st _ (evt : Event_pointer_axis.t) =
@@ -287,7 +288,7 @@ let handle_keybinding st sym =
     | [] -> true
     | [_] -> true
     | (x :: y :: xs) ->
-       let () = focus_view st y y.listener y.surface in
+       let () = focus_view st y y.surface in
        st.views <- y :: List.append xs [x];
        true
   else false
