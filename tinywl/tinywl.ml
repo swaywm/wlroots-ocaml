@@ -61,7 +61,7 @@ let default_xkb_rules : Xkbcommon.Rule_names.t = {
 }
 
 let output_frame _st _ _ =
-  failwith "todo"
+  failwith "output_frame"
 
 let server_new_output st _ output =
   let output_ok =
@@ -82,7 +82,7 @@ let server_new_output st _ output =
   end
 
 let begin_interactive _st (_view: view) (_mode: cursor_mode) =
-  print_endline "Begin interactive"
+  failwith "begin_interactive"
 
 let focus_view st view surf =
   let keyboard_state = Seat.keyboard_state st.seat in
