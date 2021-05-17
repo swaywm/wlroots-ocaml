@@ -11,6 +11,8 @@ type button_state = Types.Button_state.t = Released | Pressed
 
 type axis_source = Types.Axis_source.t = Wheel | Finger | Continuous | Wheel_tilt
 
+type axis_orientation = Types.Axis_orientation.t = Vertical | Horizontal
+
 module Event_axis = struct
   type t = Types.Event_pointer_axis.t ptr
   let t = ptr Types.Event_pointer_axis.t

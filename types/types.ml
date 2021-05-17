@@ -239,6 +239,18 @@ module Make (S : Cstubs_structs.TYPE) = struct
     ]
   end
 
+  module Axis_orientation = struct
+    type t = Vertical | Horizontal
+
+    let _WLR_AXIS_ORIENTATION_VERTICAL = constant "WLR_AXIS_ORIENTATION_VERTICAL" int64_t
+    let _WLR_AXIS_ORIENTATION_HORIZONTAL = constant "WLR_AXIS_ORIENTATION_HORIZONTAL" int64_t
+
+    let t : t typ = enum "wlr_axis_orientation" [
+      Vertical, _WLR_AXIS_ORIENTATION_VERTICAL;
+      Horizontal, _WLR_AXIS_ORIENTATION_HORIZONTAL;
+    ]
+  end
+
   module Event_pointer_axis = struct
     type t = [`event_pointer_axis] Ctypes.structure
     let t : t typ = structure "wlr_event_pointer_axis"
