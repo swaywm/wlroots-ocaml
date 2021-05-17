@@ -387,6 +387,8 @@ module Seat : sig
     t -> Unsigned.uint32 -> Unsigned.uint32 -> Pointer.button_state -> Unsigned.uint32
   val pointer_notify_axis :
     t -> Unsigned.uint32 -> Pointer.axis_orientation -> float -> Signed.Int32.t -> Pointer.axis_source -> unit
+  val pointer_notify_frame :
+    t -> unit
 end
 
 module Log : sig

@@ -352,6 +352,9 @@ struct
        @-> Axis_source.t
        @-> returning void)
 
+  let wlr_seat_pointer_notify_frame = foreign "wlr_seat_pointer_notify_frame"
+      (wlr_seat_p @-> returning void)
+
   (* wlr_log *)
 
   (* TODO *)
