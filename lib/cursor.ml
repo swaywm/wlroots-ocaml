@@ -33,9 +33,9 @@ let signal_button (cursor: t) : Event_pointer_button.t Wl.Signal.t = {
   typ = Event_pointer_button.t;
 }
 
-let signal_axis (cursor: t) : Pointer.Event_axis.t Wl.Signal.t = {
+let signal_axis (cursor: t) : Event_pointer_axis.t Wl.Signal.t = {
   c = cursor |-> Types.Cursor.events_axis;
-  typ = Pointer.Event_axis.t;
+  typ = Event_pointer_axis.t;
 }
 
 let signal_frame (cursor: t) : unit Wl.Signal.t = {

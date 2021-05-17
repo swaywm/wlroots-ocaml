@@ -155,10 +155,6 @@ module Pointer : sig
   type button_state = Released | Pressed
   type axis_source = Wheel | Finger | Continuous | Wheel_tilt
   type axis_orientation = Vertical | Horizontal
-
-  module Event_axis : sig
-    include Comparable0
-  end
 end
 
 module Edges : sig
@@ -219,6 +215,10 @@ module Event_pointer_button : sig
   val time_msec : t -> Unsigned.uint32
   val button : t -> Unsigned.uint32
   val state : t -> Pointer.button_state
+end
+
+module Event_pointer_axis : sig
+  include Comparable0
 end
 
 module Renderer : sig
@@ -315,7 +315,7 @@ module Cursor : sig
   val signal_motion : t -> Event_pointer_motion.t Wl.Signal.t
   val signal_motion_absolute : t -> Event_pointer_motion_absolute.t Wl.Signal.t
   val signal_button : t -> Event_pointer_button.t Wl.Signal.t
-  val signal_axis : t -> Pointer.Event_axis.t Wl.Signal.t
+  val signal_axis : t -> Event_pointer_axis.t Wl.Signal.t
   val signal_frame : t -> unit (* ? *) Wl.Signal.t
   val warp_absolute : t -> Input_device.t -> float -> float -> unit
 end

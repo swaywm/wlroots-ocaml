@@ -19,6 +19,7 @@ module Pointer = Pointer
 module Event_pointer_motion = Event_pointer_motion
 module Event_pointer_motion_absolute = Event_pointer_motion_absolute
 module Event_pointer_button = Event_pointer_button
+module Event_pointer_axis = Event_pointer_axis
 module Edges = Edges
 module Touch = Touch
 module Tablet_tool = Tablet_tool
