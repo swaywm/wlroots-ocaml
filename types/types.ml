@@ -258,6 +258,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let orientation = field t "orientation" Axis_orientation.t
     let delta = field t "delta" double
     let delta_discrete = field t "delta_discrete" int32_t
+    let source = field t "source" Axis_source.t
     let () = seal t
   end
 

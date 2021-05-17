@@ -223,6 +223,7 @@ module Event_pointer_axis : sig
   val orientation : t -> Pointer.axis_orientation
   val delta : t -> float
   val delta_discrete : t -> Signed.Int32.t
+  val source : t -> Pointer.axis_source
 end
 
 module Renderer : sig
