@@ -273,8 +273,8 @@ let server_cursor_axis st _ (evt : Event_pointer_axis.t) =
     (Event_pointer_axis.delta_discrete evt)
     (Event_pointer_axis.source evt)
 
-let server_cursor_frame _st _ _ =
-  failwith "server_cursor_frame"
+let server_cursor_frame st _ _ =
+  Seat.pointer_notify_frame st.seat
 
 let handle_keybinding st sym =
   if sym == Xkbcommon.Keysyms._Escape
