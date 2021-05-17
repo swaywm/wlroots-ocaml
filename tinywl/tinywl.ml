@@ -41,7 +41,7 @@ type tinywl_server = {
   output_layout : Output_layout.t;
   seat : Seat.t;
   cursor : Cursor.t;
-  cursor_mode : cursor_mode;
+  mutable cursor_mode : cursor_mode;
   cursor_mgr : Xcursor_manager.t;
   mutable outputs : tinywl_output list;
   mutable views : view list;
@@ -208,8 +208,10 @@ let view_at lx ly (view : view) =
   let view_sy = Float.sub ly (Float.of_int view.y) in
   Xdg_surface.surface_at view.surface view_sx view_sy
 
-let desktop_view_at cursor view =
-  view_at (Cursor.x cursor) (Cursor.y cursor) view
+let desktop_view_at cursor =
+  List.find_map (fun view ->
+      Option.map (fun (surf, x, y) -> (view, surf, x, y))
+        (view_at (Cursor.x cursor) (Cursor.y cursor) view))
 
 let process_cursor_motion st time =
   begin match st.cursor_mode with
@@ -218,12 +220,12 @@ let process_cursor_motion st time =
   | Resize _x ->
     process_cursor_resize st time
   | Passthrough ->
-    let view = List.find_map (desktop_view_at st.cursor) st.views in
+    let view = desktop_view_at st.cursor st.views in
     match view with
     | None ->
       Xcursor_manager.set_cursor_image st.cursor_mgr "left_ptr" st.cursor;
       Seat.pointer_clear_focus st.seat
-    | Some (surf, sub_x, sub_y) ->
+    | Some (_view, surf, sub_x, sub_y) ->
       let focus_changed = (Seat.Pointer_state.focused_surface (Seat.pointer_state st.seat)) != surf in
       Seat.pointer_notify_enter st.seat surf sub_x sub_y;
       if not focus_changed
@@ -246,9 +248,21 @@ let server_cursor_motion_absolute st _ (evt: Event_pointer_motion_absolute.t) =
     (Event_pointer_motion_absolute.y evt);
   process_cursor_motion st (Event_pointer_motion_absolute.time_msec evt)
 
-
-let server_cursor_button _st _ _ =
-  failwith "server_cursor_button"
+let server_cursor_button st _ (evt: Event_pointer_button.t) =
+  let button_state = Event_pointer_button.state evt in
+  discard (Seat.pointer_notify_button
+             st.seat
+             (Event_pointer_button.time_msec evt)
+             (Event_pointer_button.button evt)
+             button_state);
+  if button_state == Pointer.Released
+  then st.cursor_mode <- Passthrough
+  else
+    let found_view = desktop_view_at st.cursor st.views in
+    Option.iter (fun (view, surf, _, _) ->
+        Option.iter (fun xdg_surf -> focus_view st view () xdg_surf)
+          (Xdg_surface.from_surface surf))
+      found_view
 
 let server_cursor_axis _st _ _ =
   failwith "server_cursor_axis"
