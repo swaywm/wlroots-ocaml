@@ -255,6 +255,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     type t = [`event_pointer_axis] Ctypes.structure
     let t : t typ = structure "wlr_event_pointer_axis"
 
+    let orientation = field t "orientation" Axis_orientation.t
     let () = seal t
   end
 

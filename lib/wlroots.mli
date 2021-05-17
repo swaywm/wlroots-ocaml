@@ -219,6 +219,8 @@ end
 
 module Event_pointer_axis : sig
   include Comparable0
+
+  val orientation : t -> Pointer.axis_orientation
 end
 
 module Renderer : sig
