@@ -153,6 +153,7 @@ module Pointer : sig
   include Comparable0
 
   type button_state = Released | Pressed
+  type axis_source = Wheel | Finger | Continuous | Wheel_tilt
 
   module Event_axis : sig
     include Comparable0

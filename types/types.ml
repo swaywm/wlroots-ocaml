@@ -223,6 +223,22 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let () = seal t
   end
 
+  module Axis_source = struct
+    type t = Wheel | Finger | Continuous | Wheel_tilt
+
+    let _WLR_AXIS_SOURCE_WHEEL = constant "WLR_AXIS_SOURCE_WHEEL" int64_t
+    let _WLR_AXIS_SOURCE_FINGER = constant "WLR_AXIS_SOURCE_FINGER" int64_t
+    let _WLR_AXIS_SOURCE_CONTINUOUS = constant "WLR_AXIS_SOURCE_CONTINUOUS" int64_t
+    let _WLR_AXIS_SOURCE_WHEEL_TILT = constant "WLR_AXIS_SOURCE_WHEEL_TILT" int64_t
+
+    let t : t typ = enum "wlr_axis_source" [
+      Wheel, _WLR_AXIS_SOURCE_WHEEL;
+      Finger, _WLR_AXIS_SOURCE_FINGER;
+      Continuous, _WLR_AXIS_SOURCE_CONTINUOUS;
+      Wheel_tilt, _WLR_AXIS_SOURCE_WHEEL_TILT;
+    ]
+  end
+
   module Event_pointer_axis = struct
     type t = [`event_pointer_axis] Ctypes.structure
     let t : t typ = structure "wlr_event_pointer_axis"

@@ -9,6 +9,8 @@ include Ptr
 
 type button_state = Types.Button_state.t = Released | Pressed
 
+type axis_source = Types.Axis_source.t = Wheel | Finger | Continuous | Wheel_tilt
+
 module Event_axis = struct
   type t = Types.Event_pointer_axis.t ptr
   let t = ptr Types.Event_pointer_axis.t
