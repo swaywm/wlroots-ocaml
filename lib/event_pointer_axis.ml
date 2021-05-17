@@ -10,3 +10,4 @@ include Ptr
 
 let orientation = getfield Types.Event_pointer_axis.orientation
 let delta = getfield Types.Event_pointer_axis.delta
+let delta_discrete = getfield Types.Event_pointer_axis.delta_discrete
