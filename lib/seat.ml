@@ -94,3 +94,6 @@ let pointer_notify_motion =
 
 let pointer_notify_button =
   Bindings.wlr_seat_pointer_notify_button
+
+let pointer_notify_axis =
+  Bindings.wlr_seat_pointer_notify_axis

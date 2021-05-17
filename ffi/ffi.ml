@@ -343,6 +343,15 @@ struct
   let wlr_seat_pointer_notify_button = foreign "wlr_seat_pointer_notify_button"
       (wlr_seat_p @-> uint32_t @-> uint32_t @-> Button_state.t @-> returning uint32_t)
 
+  let wlr_seat_pointer_notify_axis = foreign "wlr_seat_pointer_notify_axis"
+      (wlr_seat_p
+       @-> uint32_t
+       @-> Axis_orientation.t
+       @-> double
+       @-> int32_t
+       @-> Axis_source.t
+       @-> returning void)
+
   (* wlr_log *)
 
   (* TODO *)
