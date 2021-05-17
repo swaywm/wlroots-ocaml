@@ -221,6 +221,7 @@ module Event_pointer_axis : sig
   include Comparable0
 
   val orientation : t -> Pointer.axis_orientation
+  val delta : t -> float
 end
 
 module Renderer : sig

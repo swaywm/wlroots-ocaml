@@ -256,6 +256,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_event_pointer_axis"
 
     let orientation = field t "orientation" Axis_orientation.t
+    let delta = field t "delta" double
     let () = seal t
   end
 

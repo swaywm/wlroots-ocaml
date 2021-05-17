@@ -9,3 +9,4 @@ let t = ptr Types.Event_pointer_axis.t
 include Ptr
 
 let orientation = getfield Types.Event_pointer_axis.orientation
+let delta = getfield Types.Event_pointer_axis.delta
