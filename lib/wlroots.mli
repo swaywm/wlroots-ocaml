@@ -101,6 +101,8 @@ module Output : sig
   val commit : t -> bool
   val enable : t -> bool -> unit
 
+  val effective_resolution : t -> int * int
+
   val signal_frame : t -> t Wl.Signal.t
   val signal_destroy : t -> t Wl.Signal.t
 end

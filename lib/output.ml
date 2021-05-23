@@ -53,3 +53,9 @@ let commit (output : t): bool =
   Bindings.wlr_output_commit output
 
 let enable = Bindings.wlr_output_enable
+
+let effective_resolution (output: t) : int * int =
+  let width = allocate int 0 in
+  let height = allocate int 0 in
+  Bindings.wlr_output_effective_resolution output width height;
+  (!@ width, !@ height)
