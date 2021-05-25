@@ -66,6 +66,7 @@ module Surface : sig
   val current : t -> State.t
   val pending : t -> State.t
   val send_frame_done : t -> Mtime.t -> unit
+  val get_texture : t -> Texture.t option
 end
 
 module Box : sig

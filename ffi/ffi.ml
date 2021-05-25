@@ -172,6 +172,9 @@ struct
   let wlr_surface_send_frame_done = foreign "wlr_surface_send_frame_done"
       (wlr_surface_p @-> time @-> returning void)
 
+  let wlr_surface_get_texture = foreign "wlr_surface_get_texture"
+      (wlr_surface_p @-> returning wlr_texture_p)
+
   (* wlr_renderer *)
 
   let wlr_renderer_p = ptr Renderer.t
