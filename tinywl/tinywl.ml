@@ -60,8 +60,43 @@ let default_xkb_rules : Xkbcommon.Rule_names.t = {
   options = None;
 }
 
-let output_frame _st _ _ =
-  failwith "output_frame"
+let render_surface st output (view : view) when_ surf sx sy =
+  match Surface.get_texture surf with
+  | None -> ()
+  | Some texture ->
+     let (ox', oy') : float * float = Output_layout.output_coords st.output_layout output 0.0 0.0 in
+     let ox = Float.(add ox' (of_int (view.x + sx))) in
+     let oy = Float.(add oy' (of_int (view.y + sy))) in
+     let scale = Output.scale output in
+     let current = Surface.current surf in
+     let box: Box.t = {
+       x = Float.(to_int (mul ox scale));
+       y = Float.(to_int (mul oy scale));
+       width = truncate Float.(mul (of_int (Surface.State.width current)) scale);
+       height = truncate Float.(mul (of_int (Surface.State.height current)) scale);
+     } in
+     let transform = Output.transform_invert Surface.(State.transform (current surf)) in
+     let matrix = Matrix.project_box box transform ~rotation:0.0 (Output.transform_matrix output) in
+     discard (Renderer.render_texture_with_matrix st.renderer texture matrix 1.0);
+     Surface.send_frame_done surf when_
+
+let output_frame st output _ _ =
+  let now = Mtime_clock.now () in
+  if not (Output.attach_render output)
+  then ()
+  else
+    let (w, h) = Output.effective_resolution output in
+    Renderer.begin_ st.renderer ~width:w ~height:h;
+    Renderer.clear st.renderer (0.3, 0.3, 0.3, 1.0);
+    List.iter (fun view ->
+      if not view.mapped
+      then ()
+      else Xdg_surface.for_each_surface view.surface
+             (render_surface st output view now)
+    ) (List.rev st.views);
+    Output.render_software_cursors output;
+    Renderer.end_ st.renderer;
+    discard (Output.commit output)
 
 let server_new_output st _ output =
   let output_ok =
@@ -74,7 +109,7 @@ let server_new_output st _ output =
   in
   if output_ok then begin
     let o = { output; frame = Wl.Listener.create () } in
-    Wl.Signal.add (Output.signal_frame output) o.frame (output_frame st);
+    Wl.Signal.add (Output.signal_frame output) o.frame (output_frame st output);
     st.outputs <- o :: st.outputs;
 
     Output_layout.add_auto st.output_layout output;
