@@ -80,6 +80,10 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let pending = field t "pending" (ptr Surface_state.t)
     (* TODO *)
     let () = seal t
+
+    type wlr_surface_iterator_func_t =  t ptr -> int -> int -> unit ptr -> unit
+    let wlr_surface_iterator_func_t: wlr_surface_iterator_func_t typ =
+      lift_typ (Foreign.funptr (ptr t @-> int @-> int @-> ptr void @-> returning void))
   end
 
   module Box = struct
