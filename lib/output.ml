@@ -54,6 +54,8 @@ let commit (output : t): bool =
 
 let enable = Bindings.wlr_output_enable
 
+let scale = getfield Types.Output.scale
+
 let effective_resolution (output: t) : int * int =
   let width = allocate int 0 in
   let height = allocate int 0 in

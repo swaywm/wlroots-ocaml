@@ -112,6 +112,7 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_output"
 
     let modes = field t "modes" Wl_list.t
+    let scale = field t "scale" double
     let current_mode = field t "current_mode" (ptr Output_mode.t)
     let events_destroy = field t "events.destroy" Wl_signal.t
     let events_frame = field t "events.frame" Wl_signal.t

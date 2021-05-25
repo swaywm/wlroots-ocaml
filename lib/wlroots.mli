@@ -96,6 +96,8 @@ module Output : sig
   val set_mode : t -> Mode.t -> unit
   val preferred_mode : t -> Mode.t option
 
+  val scale : t -> float
+
   val transform_matrix : t -> Matrix.t
   val create_global : t -> unit
   val attach_render : t -> bool
