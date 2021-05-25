@@ -46,6 +46,9 @@ let toplevel_set_activated =
 let toplevel_set_size =
   Bindings.wlr_xdg_toplevel_set_size
 
+let for_each_surface (surf : t) (f : Surface.t -> int -> int -> unit) =
+  Bindings.wlr_xdg_surface_for_each_surface surf (fun s x y _ -> f s x y) null
+
 module Events = struct
   let destroy (surface : t) : t Wl.Signal.t = {
     c = surface |-> Types.Xdg_surface.events_destroy;

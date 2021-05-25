@@ -256,6 +256,9 @@ struct
   let wlr_xdg_surface_surface_at = foreign "wlr_xdg_surface_surface_at"
       (wlr_xdg_surface_p @-> double @-> double @-> ptr double @-> ptr double @-> returning wlr_surface_p)
 
+  let wlr_xdg_surface_for_each_surface = foreign "wlr_xdg_surface_for_each_surface"
+      (wlr_xdg_surface_p @-> Surface.wlr_surface_iterator_func_t @-> ptr void @-> returning void)
+
   (* wlr_xdg_toplevel *)
 
   let wlr_xdg_toplevel_set_activated = foreign "wlr_xdg_toplevel_set_activated"

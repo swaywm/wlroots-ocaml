@@ -288,6 +288,7 @@ module Xdg_surface : sig
   val toplevel_set_activated : t -> bool -> Unsigned.uint32
   val toplevel_set_size : t -> int -> int -> Unsigned.uint32
   val surface_at : t -> float -> float -> (Surface.t * float * float) option
+  val for_each_surface : t -> (Surface.t -> int -> int -> unit) -> unit
 
   module Events : sig
     val destroy : t -> t Wl.Signal.t
