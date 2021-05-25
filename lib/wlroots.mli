@@ -113,6 +113,7 @@ module Output_layout : sig
 
   val create : unit -> t
   val add_auto : t -> Output.t -> unit
+  val output_coords : t -> Output.t -> float -> float -> float * float
 end
 
 module Keycodes : sig

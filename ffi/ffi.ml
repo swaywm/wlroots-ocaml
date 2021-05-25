@@ -143,6 +143,9 @@ struct
   let wlr_output_layout_add_auto = foreign "wlr_output_layout_add_auto"
       (wlr_output_layout_p @-> wlr_output_p @-> returning void)
 
+  let wlr_output_layout_output_coords = foreign "wlr_output_layout_output_coords"
+      (wlr_output_layout_p @-> wlr_output_p @-> ptr double @-> ptr double @-> returning void)
+
   (* wlr_box *)
 
   let wlr_box_p = ptr Box.t
