@@ -104,6 +104,10 @@ struct
 
   let wl_resource_p = ptr Wl_resource.t
 
+  (* wl_output_transform *)
+
+  let wl_output_transform = Wl_output_transform.t
+
   (* wlr_output_mode *)
 
   let wlr_output_mode_p = ptr Output_mode.t

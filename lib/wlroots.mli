@@ -36,10 +36,6 @@ module Wl : sig
     include Comparable0
   end
 
-  module Output_transform : sig
-    include Comparable0
-  end
-
   module Seat_capability : sig
     type cap = Pointer | Keyboard | Touch
     include Comparable0 with type t = cap list
@@ -60,7 +56,7 @@ module Surface : sig
     include Comparable0
     val width : t -> int
     val height : t -> int
-    val transform : t -> Wl.Output_transform.t
+    val transform : t -> Output.transform
   end
 
   val current : t -> State.t
@@ -76,10 +72,11 @@ end
 
 module Matrix : sig
   include Comparable0
-  val project_box : Box.t -> Wl.Output_transform.t -> rotation:float -> t -> t
+  val project_box : Box.t -> Output.transform -> rotation:float -> t -> t
 end
 
 module Output : sig
+  type transform = Wlroots_ffi_f.Ffi.Types.Wl_output_transform.transform
   include Comparable0
 
   module Mode : sig

@@ -61,3 +61,5 @@ let effective_resolution (output: t) : int * int =
   let height = allocate int 0 in
   Bindings.wlr_output_effective_resolution output width height;
   (!@ width, !@ height)
+
+type transform = Types.Wl_output_transform.transform

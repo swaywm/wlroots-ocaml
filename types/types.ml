@@ -40,9 +40,32 @@ module Make (S : Cstubs_structs.TYPE) = struct
   end
 
   module Wl_output_transform = struct
-    (* FIXME *)
-    type t = int64
-    let t : t typ = int64_t
+    type transform = Ninety
+                   | OneEighty
+                   | TwoSeventy
+                   | Flipped
+                   | FlippedNinety
+                   | FlippedOneEighty
+                   | FlippedTwoSeventy
+
+    type t = [`wl_output_transform] Ctypes.structure
+    let _WL_OUTPUT_TRANSFORM_90 = constant "WL_OUTPUT_TRANSFORM_90" int64_t (* 1 *)
+    let _WL_OUTPUT_TRANSFORM_180 = constant "WL_OUTPUT_TRANSFORM_180" int64_t (* 2 *)
+    let _WL_OUTPUT_TRANSFORM_270 = constant "WL_OUTPUT_TRANSFORM_270" int64_t (* 3 *)
+    let _WL_OUTPUT_TRANSFORM_FLIPPED = constant "WL_OUTPUT_TRANSFORM_FLIPPED" int64_t (* 4 *)
+    let _WL_OUTPUT_TRANSFORM_FLIPPED_90 = constant "WL_OUTPUT_TRANSFORM_FLIPPED_90" int64_t (* 5 *)
+    let _WL_OUTPUT_TRANSFORM_FLIPPED_180 = constant "WL_OUTPUT_TRANSFORM_FLIPPED_180" int64_t (* 6 *)
+    let _WL_OUTPUT_TRANSFORM_FLIPPED_270 = constant "WL_OUTPUT_TRANSFORM_FLIPPED_270" int64_t (* 7 *)
+
+    let t : transform typ = enum "wl_output_transform" [
+      Ninety, _WL_OUTPUT_TRANSFORM_90;
+      OneEighty, _WL_OUTPUT_TRANSFORM_180;
+      TwoSeventy, _WL_OUTPUT_TRANSFORM_270;
+      Flipped, _WL_OUTPUT_TRANSFORM_FLIPPED;
+      FlippedNinety, _WL_OUTPUT_TRANSFORM_FLIPPED_90;
+      FlippedOneEighty, _WL_OUTPUT_TRANSFORM_FLIPPED_180;
+      FlippedTwoSeventy, _WL_OUTPUT_TRANSFORM_FLIPPED_270;
+    ]
   end
 
   module Wl_seat_capability = struct
