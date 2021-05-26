@@ -107,6 +107,8 @@ module Output : sig
   val signal_destroy : t -> t Wl.Signal.t
 
   val transform_invert : transform -> transform
+
+  val render_software_cursors : t -> unit
 end
 
 module Output_layout : sig

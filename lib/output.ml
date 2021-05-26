@@ -65,3 +65,6 @@ let effective_resolution (output: t) : int * int =
 type transform = Types.Wl_output_transform.transform
 
 let transform_invert = Bindings.wlr_output_transform_invert
+
+let render_software_cursors output =
+  Bindings.wlr_output_render_software_cursors output null

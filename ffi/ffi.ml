@@ -140,6 +140,11 @@ struct
   let wlr_output_transform_invert = foreign "wlr_output_transform_invert"
       (wl_output_transform @-> returning wl_output_transform)
 
+  let wlr_output_render_software_cursors = foreign "wlr_output_render_software_cursors"
+      (* FIXME: The void pointer is a pixman_region32_t for which no bindings exist (yet).
+         This is only ok because so far, no one uses it. *)
+      (wlr_output_p @-> ptr void @-> returning void)
+
   (* wlr_output_layout *)
 
   let wlr_output_layout_p = ptr Output_layout.t
