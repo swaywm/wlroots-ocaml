@@ -36,8 +36,6 @@ type cursor_mode = Passthrough
                  | Move
                  | Resize of Edges.t
 
-let discard _ = ()
-
 type tinywl_server = {
   display : Wl.Display.t;
   backend : Backend.t;
@@ -81,7 +79,7 @@ let render_surface st output (view : view) when_ surf sx sy =
      } in
      let transform = Output.transform_invert Surface.(State.transform (current surf)) in
      let matrix = Matrix.project_box box transform ~rotation:0.0 (Output.transform_matrix output) in
-     discard (Renderer.render_texture_with_matrix st.renderer texture matrix 1.0);
+     ignore (Renderer.render_texture_with_matrix st.renderer texture matrix 1.0);
      Surface.send_frame_done surf when_
 
 let output_frame st output _ _ =
@@ -100,7 +98,7 @@ let output_frame st output _ _ =
     ) (List.rev st.views);
     Output.render_software_cursors output;
     Renderer.end_ st.renderer;
-    discard (Output.commit output)
+    ignore (Output.commit output)
 
 let server_new_output st _ output =
   let output_ok =
@@ -164,11 +162,11 @@ let focus_view st view surf =
         else Xdg_surface.from_surface prev
       )
   in
-  Option.iter (fun s -> discard (Xdg_surface.toplevel_set_activated s false))
+  Option.iter (fun s -> ignore (Xdg_surface.toplevel_set_activated s false))
     to_deactivate;
   let keyboard = Seat.Keyboard_state.keyboard keyboard_state in
   st.views <- view :: List.filter ((!=) view) st.views;
-  discard (Xdg_surface.toplevel_set_activated surf true);
+  ignore (Xdg_surface.toplevel_set_activated surf true);
   Seat.keyboard_notify_enter
     st.seat
     (Xdg_surface.surface surf)
@@ -324,7 +322,7 @@ let server_cursor_motion_absolute st _ (evt: Event_pointer_motion_absolute.t) =
 
 let server_cursor_button st _ (evt: Event_pointer_button.t) =
   let button_state = Event_pointer_button.state evt in
-  discard (Seat.pointer_notify_button
+  ignore (Seat.pointer_notify_button
              st.seat
              (Event_pointer_button.time_msec evt)
              (Event_pointer_button.button evt)
