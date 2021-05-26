@@ -305,9 +305,7 @@ let process_cursor_motion st time =
     | Some (_view, surf, sub_x, sub_y) ->
       let focus_changed = Seat.(Pointer_state.focused_surface (pointer_state st.seat)) != surf in
       Seat.pointer_notify_enter st.seat surf sub_x sub_y;
-      if not focus_changed
-      then Seat.pointer_notify_motion st.seat time sub_x sub_y
-      else ()
+      if not focus_changed then Seat.pointer_notify_motion st.seat time sub_x sub_y
   end
 
 let server_cursor_motion st _ (evt: Event_pointer_motion.t) = Event_pointer_motion.(
@@ -372,9 +370,7 @@ let keyboard_handle_key st keyboard device _ key_evt =
     then List.fold_left (fun _ sym -> handle_keybinding st sym) false syms
     else false
   in
-  if handled
-  then ()
-  else
+  if not handled then
     let () = Seat.set_keyboard st.seat device in
     Seat.keyboard_notify_key st.seat key_evt
 
