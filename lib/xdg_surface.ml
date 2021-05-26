@@ -13,10 +13,8 @@ include Ptr
 
 let role (surface : t) : role =
   surface |->> Types.Xdg_surface.role
-let surface (surface : t) : Surface.t =
-  surface |-> Types.Xdg_surface.surface
-let toplevel (surface : t) : Xdg_toplevel.t =
-  surface |-> Types.Xdg_surface.toplevel
+let surface = getfield Types.Xdg_surface.surface
+let toplevel = getfield Types.Xdg_surface.toplevel
 
 let from_surface (surface : Surface.t) : t option =
   (* This is not exactly a verbatim binding but it is safer *)

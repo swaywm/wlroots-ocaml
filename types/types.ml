@@ -453,8 +453,8 @@ module Make (S : Cstubs_structs.TYPE) = struct
     let t : t typ = structure "wlr_xdg_surface"
 
     let role = field t "role" Xdg_surface_role.t
-    let surface = field t "surface" Surface.t
-    let toplevel = field t "toplevel" Xdg_toplevel.t
+    let surface = field t "surface" (ptr Surface.t)
+    let toplevel = field t "toplevel" (ptr Xdg_toplevel.t)
 
     let events_destroy = field t "events.destroy" Wl_signal.t
     let events_ping_timeout = field t "events.ping_timeout" Wl_signal.t
@@ -531,6 +531,29 @@ module Make (S : Cstubs_structs.TYPE) = struct
       field t "pointer_state" Seat_pointer_state.t
     let keyboard_state =
       field t "keyboard_state" Seat_keyboard_state.t
+    let () = seal t
+  end
+
+  module Xdg_toplevel_move_event = struct
+    type t = [`xdg_toplevel_move_event] Ctypes.structure
+    let t : t typ = structure "wlr_xdg_toplevel_move_event"
+
+    let surface = field t "surface" (ptr Xdg_surface.t)
+    let seat = field t "seat" (ptr Seat.t)
+    let serial = field t "serial" uint32_t
+
+    let () = seal t
+  end
+
+  module Xdg_toplevel_resize_event = struct
+    type t = [`xdg_toplevel_resize_event] Ctypes.structure
+    let t : t typ = structure "wlr_xdg_toplevel_resize_event"
+
+    let surface = field t "surface" (ptr Xdg_surface.t)
+    let seat = field t "seat" (ptr Seat.t)
+    let serial = field t "serial" uint32_t
+    let edges = field t "edges" Edges.t
+
     let () = seal t
   end
 

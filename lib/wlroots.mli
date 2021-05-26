@@ -273,16 +273,31 @@ module Compositor : sig
   val create : Wl.Display.t -> Renderer.t -> t
 end
 
-module Xdg_toplevel: sig
+module rec Xdg_toplevel: sig
   include Comparable0
 
   module Events: sig
-    val request_move : t -> t Wl.Signal.t
-    val request_resize : t -> t Wl.Signal.t
+    module Move : sig
+      type t
+      val surface : t -> Xdg_surface.t
+      val seat : t -> Seat.t
+      val serial : t -> Unsigned.UInt32.t
+    end
+
+    module Resize : sig
+      type t
+      val surface : t -> Xdg_surface.t
+      val seat : t -> Seat.t
+      val serial : t -> Unsigned.UInt32.t
+      val edges : t -> Edges.t
+    end
+
+    val request_move : t -> Move.t Wl.Signal.t
+    val request_resize : t -> Resize.t Wl.Signal.t
   end
 end
 
-module Xdg_surface : sig
+and Xdg_surface : sig
   include Comparable0
   type role = Wlroots_ffi_f.Ffi.Types.Xdg_surface_role.role
 
@@ -309,7 +324,7 @@ module Xdg_surface : sig
   end
 end
 
-module Xdg_shell : sig
+and Xdg_shell : sig
   include Comparable0
 
   val create : Wl.Display.t -> t
