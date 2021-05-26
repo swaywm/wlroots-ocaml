@@ -239,6 +239,7 @@ module Renderer : sig
   val end_ : t -> unit
   val clear : t -> float * float * float * float -> unit
   val init_wl_display : t -> Wl.Display.t -> bool
+  val render_texture_with_matrix : t -> Texture.t -> Matrix.t -> float -> bool
 end
 
 module Backend : sig

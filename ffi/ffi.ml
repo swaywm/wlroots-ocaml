@@ -201,6 +201,9 @@ struct
   let wlr_renderer_init_wl_display = foreign "wlr_renderer_init_wl_display"
       (wlr_renderer_p @-> wl_display_p @-> returning bool)
 
+  let wlr_render_texture_with_matrix = foreign "wlr_render_texture_with_matrix"
+      (wlr_renderer_p @-> wlr_texture_p @-> ptr double @-> double @-> returning bool)
+
   (* wlr_keyboard *)
 
   let wlr_keyboard_p = ptr Keyboard.t
