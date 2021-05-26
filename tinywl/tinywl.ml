@@ -199,36 +199,38 @@ let process_cursor_resize st _time =
       let border_y = Float.sub (Cursor.y st.cursor) grab.y in
 
       let (new_top, new_bottom) =
-      match grab.resize_edges with
-        | Edges.Top ->
+      if List.exists ((==) Edges.Top) grab.resize_edges
+      then
           let new_top = border_y in
           let new_bottom = grab.geobox.y + grab.geobox.height in
           if new_top >= Float.of_int new_bottom
           then (new_bottom - 1, new_bottom)
           else (truncate new_top, new_bottom)
-      | Edges.Bottom ->
+      else if List.exists ((==) Edges.Bottom) grab.resize_edges
+      then
           let new_top = grab.geobox.y in
           let new_bottom = border_y in
           if new_bottom <= Float.of_int new_top
           then (new_top, new_top + 1)
           else (new_top, truncate new_bottom)
-      | _ -> (grab.geobox.y, grab.geobox.y + grab.geobox.height)
+      else (grab.geobox.y, grab.geobox.y + grab.geobox.height)
       in
       let (new_left, new_right) =
-        match grab.resize_edges with
-        | Edges.Left ->
+        if List.exists ((==) Edges.Left) grab.resize_edges
+        then
           let new_left = border_x in
           let new_right = grab.geobox.x + grab.geobox.width in
           if new_left >= Float.of_int new_right
           then (new_right - 1, new_right)
           else (truncate new_left, new_right)
-        | Edges.Right ->
+        else if List.exists ((==) Edges.Right) grab.resize_edges
+        then
           let new_left = grab.geobox.x in
           let new_right = border_x in
           if new_right <= Float.of_int new_left
           then (new_left, new_left + 1)
           else (new_left, truncate new_right)
-        | _ -> (grab.geobox.x, grab.geobox.x + grab.geobox.width) in
+        else (grab.geobox.x, grab.geobox.x + grab.geobox.width) in
 
       let geobox = Xdg_surface.get_geometry view.surface in
       view.x <- new_left - geobox.x;

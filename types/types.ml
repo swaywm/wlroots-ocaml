@@ -292,22 +292,14 @@ module Make (S : Cstubs_structs.TYPE) = struct
   end
 
   module Edges = struct
-    type t = None | Top | Bottom | Left | Right
+    type t = Unsigned.uint32
+    let t : t typ = uint32_t
 
-    let _WLR_EDGE_NONE = constant "WLR_EDGE_NONE" int64_t
-    let _WLR_EDGE_TOP = constant "WLR_EDGE_TOP" int64_t
-    let _WLR_EDGE_BOTTOM = constant "WLR_EDGE_BOTTOM" int64_t
-    let _WLR_EDGE_LEFT = constant "WLR_EDGE_LEFT" int64_t
-    let _WLR_EDGE_RIGHT = constant "WLR_EDGE_RIGHT" int64_t
-
-    let t : t typ =
-      enum "wlr_edges" [
-        None, _WLR_EDGE_NONE;
-        Top, _WLR_EDGE_TOP;
-        Bottom, _WLR_EDGE_BOTTOM;
-        Left, _WLR_EDGE_LEFT;
-        Right, _WLR_EDGE_RIGHT;
-      ]
+    let _WLR_EDGE_NONE = constant "WLR_EDGE_NONE" uint32_t
+    let _WLR_EDGE_TOP = constant "WLR_EDGE_TOP" uint32_t
+    let _WLR_EDGE_BOTTOM = constant "WLR_EDGE_BOTTOM" uint32_t
+    let _WLR_EDGE_LEFT = constant "WLR_EDGE_LEFT" uint32_t
+    let _WLR_EDGE_RIGHT = constant "WLR_EDGE_RIGHT" uint32_t
   end
 
   module Touch = struct

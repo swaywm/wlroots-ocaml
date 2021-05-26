@@ -165,7 +165,8 @@ module Pointer : sig
 end
 
 module Edges : sig
-  type t = None | Top | Bottom | Left | Right
+  type edges = None | Top | Bottom | Left | Right
+  include Comparable0 with type t = edges list
 end
 
 module Touch : sig
