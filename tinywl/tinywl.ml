@@ -8,12 +8,16 @@ type view = {
   mutable y: int;
 }
 
+type resize = {
+  geobox: Box.t;
+  edges: Edges.t;
+}
+
 type grab = {
   view: view;
   x: float;
   y: float;
-  geobox: Box.t;
-  resize_edges: Edges.t;
+  resize: resize option;
 }
 
 type keyboard = {
@@ -30,7 +34,7 @@ type tinywl_output = {
 
 type cursor_mode = Passthrough
                  | Move
-                 | Resize of Unsigned.uint32
+                 | Resize of Edges.t
 
 let discard _ = ()
 
@@ -49,7 +53,7 @@ type tinywl_server = {
 
   new_output : Wl.Listener.t;
 
-  grab: grab option;
+  mutable grab: grab option;
 }
 
 let default_xkb_rules : Xkbcommon.Rule_names.t = {
@@ -116,8 +120,39 @@ let server_new_output st _ output =
     Output.create_global output;
   end
 
-let begin_interactive _st (_view: view) (_mode: cursor_mode) =
-  failwith "begin_interactive"
+let begin_interactive st view mode =
+  let focused_surface = Seat.(Pointer_state.focused_surface (pointer_state st.seat)) in
+  if Xdg_surface.surface view.surface == focused_surface then (
+    st.cursor_mode <- mode;
+    match mode with
+    | Passthrough -> ()
+    | Move ->
+      st.grab <- Some {
+        view = view;
+        x = Float.(sub (Cursor.x st.cursor) (of_int view.x));
+        y = Float.(sub (Cursor.y st.cursor) (of_int view.y));
+        resize = None;
+      }
+    | Resize edges ->
+      let geobox = Xdg_surface.get_geometry view.surface in
+      let border_x =
+        view.x + geobox.x + (
+          if List.exists ((==) Edges.Right) edges then geobox.width else 0
+        )
+      in
+      let border_y =
+        view.y + geobox.y + (
+          if List.exists ((==) Edges.Bottom) edges then geobox.height else 0
+        )
+      in
+      st.grab <- Some {
+        view = view;
+        x = Float.(sub (Cursor.x st.cursor) (of_int border_x));
+        y = Float.(sub (Cursor.y st.cursor) (of_int border_y));
+        resize = Some { edges; geobox; };
+      }
+  )
+
 
 let focus_view st view surf =
   let keyboard_state = Seat.keyboard_state st.seat in
@@ -163,84 +198,82 @@ let server_new_xdg_surface st _listener (surf : Xdg_surface.t) =
 
       st.views <- view :: st.views;
 
-      (* We want to add the signal handlers for the surface events using Wl.Signal.add *)
-      Wl.Signal.add (Xdg_surface.Events.destroy surf) view_listener
-        (fun _ _ -> st.views <- List.filter (fun item -> not (item == view)) st.views;);
+      Wl.Signal.(
+        Xdg_surface.Events.(
+          add (destroy surf) view_listener
+            (fun _ _ -> st.views <- List.filter (fun item -> item <> view) st.views;);
+          add (map surf) view_listener
+            (fun _ _ ->
+              view.mapped <- true;
+              focus_view st view surf);
+          add (unmap surf) view_listener
+            (fun _ _ -> view.mapped <- false;)
+        );
 
-      (* Might need to make mapped true in this guy *)
-      Wl.Signal.add (Xdg_surface.Events.map surf) view_listener
-        (fun _ _ ->
-          view.mapped <- true;
-          focus_view st view surf);
-      Wl.Signal.add (Xdg_surface.Events.unmap surf) view_listener
-        (fun _ _ -> view.mapped <- false;);
+        Xdg_toplevel.Events.(
+          (* cotd *)
+          let toplevel = Xdg_surface.toplevel surf in
 
-      (* cotd *)
-      let toplevel = Xdg_surface.toplevel surf in
-
-      Wl.Signal.add (Xdg_toplevel.Events.request_move toplevel) view_listener
-        (fun _ _ -> begin_interactive st view Move);
-      Wl.Signal.add (Xdg_toplevel.Events.request_resize toplevel) view_listener
-        (* FIXME: Need to actually get the edges from the event to pass with Resize *)
-        (fun _ _ -> begin_interactive st view (Resize (Unsigned.UInt32.of_int 0)));
-      ()
+          add (request_move toplevel) view_listener
+            (fun _ _ -> begin_interactive st view Move);
+          add (request_resize toplevel) view_listener
+            (fun _ ev -> begin_interactive st view (Resize (Resize.edges ev)))
+        )
+      )
   end
 
-let process_cursor_move st _time =
-  Option.iter (fun grab ->
-      grab.view.x <- truncate (Float.sub (Cursor.x st.cursor) grab.x);
-      grab.view.y <- truncate (Float.sub (Cursor.y st.cursor) grab.y);
-    ) st.grab
+let process_cursor_move st _time grab =
+  grab.view.x <- Float.(to_int (sub (Cursor.x st.cursor) grab.x));
+  grab.view.y <- Float.(to_int (sub (Cursor.y st.cursor) grab.y))
 
-let process_cursor_resize st _time =
-  Option.iter (fun grab ->
-      let view = grab.view in
-      let border_x = Float.sub (Cursor.x st.cursor) grab.x in
-      let border_y = Float.sub (Cursor.y st.cursor) grab.y in
+let process_cursor_resize st _time edges (grab, resize) =
+  let view = grab.view in
+  let border_x = Float.sub (Cursor.x st.cursor) grab.x in
+  let border_y = Float.sub (Cursor.y st.cursor) grab.y in
 
-      let (new_top, new_bottom) =
-      if List.exists ((==) Edges.Top) grab.resize_edges
-      then
-          let new_top = border_y in
-          let new_bottom = grab.geobox.y + grab.geobox.height in
-          if new_top >= Float.of_int new_bottom
-          then (new_bottom - 1, new_bottom)
-          else (truncate new_top, new_bottom)
-      else if List.exists ((==) Edges.Bottom) grab.resize_edges
-      then
-          let new_top = grab.geobox.y in
-          let new_bottom = border_y in
-          if new_bottom <= Float.of_int new_top
-          then (new_top, new_top + 1)
-          else (new_top, truncate new_bottom)
-      else (grab.geobox.y, grab.geobox.y + grab.geobox.height)
-      in
-      let (new_left, new_right) =
-        if List.exists ((==) Edges.Left) grab.resize_edges
-        then
-          let new_left = border_x in
-          let new_right = grab.geobox.x + grab.geobox.width in
-          if new_left >= Float.of_int new_right
-          then (new_right - 1, new_right)
-          else (truncate new_left, new_right)
-        else if List.exists ((==) Edges.Right) grab.resize_edges
-        then
-          let new_left = grab.geobox.x in
-          let new_right = border_x in
-          if new_right <= Float.of_int new_left
-          then (new_left, new_left + 1)
-          else (new_left, truncate new_right)
-        else (grab.geobox.x, grab.geobox.x + grab.geobox.width) in
+  let (new_top, new_bottom) =
+    if List.exists ((==) Edges.Top) edges
+    then
+      let new_top = border_y in
+      let new_bottom = resize.geobox.y + resize.geobox.height in
+      if new_top >= Float.of_int new_bottom
+      then (new_bottom - 1, new_bottom)
+      else (truncate new_top, new_bottom)
+    else if List.exists ((==) Edges.Bottom) edges
+    then
+      let new_top = resize.geobox.y in
+      let new_bottom = border_y in
+      if new_bottom <= Float.of_int new_top
+      then (new_top, new_top + 1)
+      else (new_top, truncate new_bottom)
+    else (resize.geobox.y, resize.geobox.y + resize.geobox.height)
+  in
+  let (new_left, new_right) =
+    if List.exists ((==) Edges.Left) edges
+    then
+      let new_left = border_x in
+      let new_right = resize.geobox.x + resize.geobox.width in
+      if new_left >= Float.of_int new_right
+      then (new_right - 1, new_right)
+      else (truncate new_left, new_right)
+    else if List.exists ((==) Edges.Right) edges
+    then
+      let new_left = resize.geobox.x in
+      let new_right = border_x in
+      if new_right <= Float.of_int new_left
+      then (new_left, new_left + 1)
+      else (new_left, truncate new_right)
+    else (resize.geobox.x, resize.geobox.x + resize.geobox.width)
+  in
 
-      let geobox = Xdg_surface.get_geometry view.surface in
-      view.x <- new_left - geobox.x;
-      view.y <- new_top - geobox.y;
+  let geobox = Xdg_surface.get_geometry view.surface in
+  view.x <- new_left - geobox.x;
+  view.y <- new_top - geobox.y;
 
-      let new_width = new_right - new_left in
-      let new_height = new_bottom - new_top in
+  let new_width = new_right - new_left in
+  let new_height = new_bottom - new_top in
 
-      discard (Xdg_surface.toplevel_set_size view.surface, new_width, new_height)
-    ) st.grab
+  ignore (Xdg_surface.toplevel_set_size view.surface, new_width, new_height)
 
 let view_at lx ly (view : view) =
   let view_sx = Float.sub lx (Float.of_int view.x) in
@@ -255,9 +288,11 @@ let desktop_view_at cursor =
 let process_cursor_motion st time =
   begin match st.cursor_mode with
   | Move ->
-    process_cursor_move st time
-  | Resize _x ->
-    process_cursor_resize st time
+    Option.iter (process_cursor_move st time) st.grab
+  | Resize edges -> Option.(
+       let resizing = bind st.grab (fun g -> map (fun r -> (g, r)) g.resize)
+       in iter (process_cursor_resize st time edges) resizing
+     )
   | Passthrough ->
     let view = desktop_view_at st.cursor st.views in
     match view with
