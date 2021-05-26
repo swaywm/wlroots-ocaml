@@ -62,51 +62,54 @@ let default_xkb_rules : Xkbcommon.Rule_names.t = {
   options = None;
 }
 
-let render_surface st output (view : view) when_ surf sx sy =
-  match Surface.get_texture surf with
-  | None -> ()
-  | Some texture ->
-     let (ox', oy') : float * float = Output_layout.output_coords st.output_layout output 0.0 0.0 in
-     let ox = Float.(add ox' (of_int (view.x + sx))) in
-     let oy = Float.(add oy' (of_int (view.y + sy))) in
-     let scale = Output.scale output in
-     let current = Surface.current surf in
-     let box: Box.t = {
-       x = Float.(to_int (mul ox scale));
-       y = Float.(to_int (mul oy scale));
-       width = truncate Float.(mul (of_int (Surface.State.width current)) scale);
-       height = truncate Float.(mul (of_int (Surface.State.height current)) scale);
-     } in
-     let transform = Output.transform_invert Surface.(State.transform (current surf)) in
-     let matrix = Matrix.project_box box transform ~rotation:0.0 (Output.transform_matrix output) in
-     ignore (Renderer.render_texture_with_matrix st.renderer texture matrix 1.0);
-     Surface.send_frame_done surf when_
+let render_surface st output (view : view) when_ surf sx sy = Surface.(
+    match get_texture surf with
+    | None -> ()
+    | Some texture ->
+       let (ox', oy') : float * float = Output_layout.output_coords st.output_layout output 0.0 0.0 in
+       let ox = Float.(add ox' (of_int (view.x + sx))) in
+       let oy = Float.(add oy' (of_int (view.y + sy))) in
+       let scale = Output.scale output in
+       let current_surf = current surf in
+       let box: Box.t = {
+         x = Float.(to_int (mul ox scale));
+         y = Float.(to_int (mul oy scale));
+         width = Float.(to_int (mul (of_int (State.width current_surf)) scale));
+         height = Float.(to_int (mul (of_int (State.height current_surf)) scale));
+       } in
+       let transform = Output.transform_invert (State.transform current_surf) in
+       let matrix = Matrix.project_box box transform ~rotation:0.0 (Output.transform_matrix output) in
+       ignore (Renderer.render_texture_with_matrix st.renderer texture matrix 1.0);
+       send_frame_done surf when_
+  )
 
 let output_frame st output _ _ =
   let now = Mtime_clock.now () in
-  if not (Output.attach_render output)
-  then ()
-  else
-    let (w, h) = Output.effective_resolution output in
-    Renderer.begin_ st.renderer ~width:w ~height:h;
-    Renderer.clear st.renderer (0.3, 0.3, 0.3, 1.0);
-    List.iter (fun view ->
-      if not view.mapped
-      then ()
-      else Xdg_surface.for_each_surface view.surface
-             (render_surface st output view now)
-    ) (List.rev st.views);
-    Output.render_software_cursors output;
-    Renderer.end_ st.renderer;
-    ignore (Output.commit output)
+  if Output.attach_render output
+  then
+    let (w, h) = Output.effective_resolution output in Renderer.(
+      begin_ st.renderer ~width:w ~height:h;
+      clear st.renderer (0.3, 0.3, 0.3, 1.0);
+      List.iter (fun view ->
+        if view.mapped
+        then Xdg_surface.for_each_surface view.surface
+               (render_surface st output view now)
+      ) (List.rev st.views);
+      Output.render_software_cursors output;
+      end_ st.renderer;
+      ignore (Output.commit output)
+    )
+
 
 let server_new_output st _ output =
   let output_ok =
     match Output.preferred_mode output with
     | Some mode ->
-      Output.set_mode output mode;
-      Output.enable output true;
-      Output.commit output
+       Output.(
+         set_mode output mode;
+         enable output true;
+         commit output
+       )
     | None -> true
   in
   if output_ok then begin
@@ -167,12 +170,14 @@ let focus_view st view surf =
   let keyboard = Seat.Keyboard_state.keyboard keyboard_state in
   st.views <- view :: List.filter ((!=) view) st.views;
   ignore (Xdg_surface.toplevel_set_activated surf true);
-  Seat.keyboard_notify_enter
-    st.seat
-    (Xdg_surface.surface surf)
-    (Keyboard.keycodes keyboard)
-    (Keyboard.num_keycodes keyboard)
-    (Keyboard.modifiers keyboard)
+  Keyboard.(
+    Seat.keyboard_notify_enter
+      st.seat
+      (Xdg_surface.surface surf)
+      (keycodes keyboard)
+      (num_keycodes keyboard)
+      (modifiers keyboard)
+  )
 
 let keyboard_handle_modifiers st device _ keyboard =
   let _ = Seat.set_keyboard st.seat device in
@@ -274,14 +279,14 @@ let process_cursor_resize st _time edges (grab, resize) =
   ignore (Xdg_surface.toplevel_set_size view.surface, new_width, new_height)
 
 let view_at lx ly (view : view) =
-  let view_sx = Float.sub lx (Float.of_int view.x) in
-  let view_sy = Float.sub ly (Float.of_int view.y) in
+  let view_sx = Float.(sub lx (of_int view.x)) in
+  let view_sy = Float.(sub ly (of_int view.y)) in
   Xdg_surface.surface_at view.surface view_sx view_sy
 
 let desktop_view_at cursor =
   List.find_map (fun view ->
       Option.map (fun (surf, x, y) -> (view, surf, x, y))
-        (view_at (Cursor.x cursor) (Cursor.y cursor) view))
+        Cursor.(view_at (x cursor) (y cursor) view))
 
 let process_cursor_motion st time =
   begin match st.cursor_mode with
@@ -298,35 +303,29 @@ let process_cursor_motion st time =
       Xcursor_manager.set_cursor_image st.cursor_mgr "left_ptr" st.cursor;
       Seat.pointer_clear_focus st.seat
     | Some (_view, surf, sub_x, sub_y) ->
-      let focus_changed = (Seat.Pointer_state.focused_surface (Seat.pointer_state st.seat)) != surf in
+      let focus_changed = Seat.(Pointer_state.focused_surface (pointer_state st.seat)) != surf in
       Seat.pointer_notify_enter st.seat surf sub_x sub_y;
       if not focus_changed
       then Seat.pointer_notify_motion st.seat time sub_x sub_y
       else ()
   end
 
-let server_cursor_motion st _ (evt: Event_pointer_motion.t) =
-  Cursor.move st.cursor
-    (Event_pointer_motion.device evt)
-    (Event_pointer_motion.delta_x evt)
-    (Event_pointer_motion.delta_y evt);
-  process_cursor_motion st (Event_pointer_motion.time_msec evt)
+let server_cursor_motion st _ (evt: Event_pointer_motion.t) = Event_pointer_motion.(
+    Cursor.move st.cursor (device evt) (delta_x evt) (delta_y evt);
+    process_cursor_motion st (time_msec evt)
+  )
 
 let server_cursor_motion_absolute st _ (evt: Event_pointer_motion_absolute.t) =
-  Cursor.warp_absolute
-    st.cursor
-    (Event_pointer_motion_absolute.device evt)
-    (Event_pointer_motion_absolute.x evt)
-    (Event_pointer_motion_absolute.y evt);
-  process_cursor_motion st (Event_pointer_motion_absolute.time_msec evt)
+  Event_pointer_motion_absolute.(
+    Cursor.warp_absolute st.cursor (device evt) (x evt) (y evt);
+    process_cursor_motion st (time_msec evt)
+  )
 
 let server_cursor_button st _ (evt: Event_pointer_button.t) =
   let button_state = Event_pointer_button.state evt in
-  ignore (Seat.pointer_notify_button
-             st.seat
-             (Event_pointer_button.time_msec evt)
-             (Event_pointer_button.button evt)
-             button_state);
+  ignore Event_pointer_button.(
+    Seat.pointer_notify_button st.seat (time_msec evt) (button evt) button_state
+  );
   if button_state == Pointer.Released
   then st.cursor_mode <- Passthrough
   else
@@ -335,14 +334,15 @@ let server_cursor_button st _ (evt: Event_pointer_button.t) =
         Option.iter (focus_view st view) (Xdg_surface.from_surface surf))
       found_view
 
-let server_cursor_axis st _ (evt : Event_pointer_axis.t) =
-  Seat.pointer_notify_axis
-    st.seat
-    (Event_pointer_axis.time_msec evt)
-    (Event_pointer_axis.orientation evt)
-    (Event_pointer_axis.delta evt)
-    (Event_pointer_axis.delta_discrete evt)
-    (Event_pointer_axis.source evt)
+let server_cursor_axis st _ (evt : Event_pointer_axis.t) = Event_pointer_axis.(
+    Seat.pointer_notify_axis
+      st.seat
+      (time_msec evt)
+      (orientation evt)
+      (delta evt)
+      (delta_discrete evt)
+      (source evt)
+ )
 
 let server_cursor_frame st _ _ =
   Seat.pointer_notify_frame st.seat
@@ -397,16 +397,18 @@ let server_new_keyboard st (device: Input_device.t) =
   match Input_device.typ device with
   | Input_device.Keyboard keyboard ->
      server_new_keyboard_set_settings keyboard;
-     let modifiers = Wl.Listener.create () in
-     let key = Wl.Listener.create () in
-     Wl.Signal.add (Keyboard.Events.modifiers keyboard) modifiers
-       (keyboard_handle_modifiers st device);
-     Wl.Signal.add (Keyboard.Events.key keyboard) key
-       (keyboard_handle_key st keyboard device);
+     let modifiers_l = Wl.Listener.create () in
+     let key_l = Wl.Listener.create () in
+     Wl.Signal.(Keyboard.Events.(
+       add (modifiers keyboard) modifiers_l
+         (keyboard_handle_modifiers st device);
+       add (key keyboard) key_l
+         (keyboard_handle_key st keyboard device);
+     ));
      let tinywl_keyboard = {
        device = keyboard;
-       modifiers = modifiers;
-       key = key;
+       modifiers = modifiers_l;
+       key = key_l;
      } in
 
      st.keyboards <- tinywl_keyboard :: st.keyboards;
@@ -415,15 +417,14 @@ let server_new_keyboard st (device: Input_device.t) =
 let server_new_pointer st (pointer: Input_device.t) =
   Cursor.attach_input_device st.cursor pointer
 
-let server_new_input st _ (device: Input_device.t) =
-  begin match Input_device.typ device with
-  | Input_device.Keyboard _ ->
-    server_new_keyboard st device
-  | Input_device.Pointer _ ->
-    server_new_pointer st device
-  | _ ->
-    ()
-  end;
+let server_new_input st _ (device: Input_device.t) = Input_device.(
+    match typ device with
+    | Keyboard _ ->
+      server_new_keyboard st device
+    | Pointer _ ->
+      server_new_pointer st device
+    | _ -> ()
+  );
 
   let caps =
     Wl.Seat_capability.Pointer ::
@@ -434,12 +435,12 @@ let server_new_input st _ (device: Input_device.t) =
   Seat.set_capabilities st.seat caps
 
 let server_request_cursor st _ (ev: Seat.Pointer_request_set_cursor_event.t) =
-  let module E = Seat.Pointer_request_set_cursor_event in
   let focused_client =
     st.seat |> Seat.pointer_state |> Seat.Pointer_state.focused_client in
 
-  if Seat.Client.equal focused_client (E.seat_client ev) then (
-    Cursor.set_surface st.cursor (E.surface ev) (E.hotspot_x ev) (E.hotspot_y ev)
+  Seat.Pointer_request_set_cursor_event.(
+    if Seat.Client.equal focused_client (seat_client ev)
+    then Cursor.set_surface st.cursor (surface ev) (hotspot_x ev) (hotspot_y ev)
   )
 
 let () =
@@ -473,50 +474,56 @@ let () =
 
   let seat = Seat.create display "seat0" in
 
-  let new_output = Wl.Listener.create () in
-  let new_xdg_surface = Wl.Listener.create () in
-  let cursor_motion = Wl.Listener.create () in
-  let cursor_motion_absolute = Wl.Listener.create () in
-  let cursor_button = Wl.Listener.create () in
-  let cursor_axis = Wl.Listener.create () in
-  let cursor_frame = Wl.Listener.create () in
-  let new_input = Wl.Listener.create () in
-  let request_cursor = Wl.Listener.create () in
-  let st = { display; backend; renderer; output_layout; new_output; seat;
-             cursor; cursor_mode = Passthrough; cursor_mgr; outputs = [];
-             views = []; keyboards = []; grab = None } in
+  Wl.Listener.(
+    let new_output = create () in
+    let new_xdg_surface = create () in
+    let cursor_motion = create () in
+    let cursor_motion_absolute = create () in
+    let cursor_button = create () in
+    let cursor_axis = create () in
+    let cursor_frame = create () in
+    let new_input = create () in
+    let request_cursor = create () in
+    let st = { display; backend; renderer; output_layout; new_output; seat;
+               cursor; cursor_mode = Passthrough; cursor_mgr; outputs = [];
+               views = []; keyboards = []; grab = None } in
 
-  Wl.Signal.add (Backend.signal_new_output backend) new_output
-    (server_new_output st);
-  Wl.Signal.add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface
-    (server_new_xdg_surface st);
+    Wl.Signal.(
+      add (Backend.signal_new_output backend) new_output
+        (server_new_output st);
+      add (Xdg_shell.signal_new_surface xdg_shell) new_xdg_surface
+        (server_new_xdg_surface st);
 
-  Wl.Signal.add (Cursor.signal_motion cursor) cursor_motion
-    (server_cursor_motion st);
-  Wl.Signal.add (Cursor.signal_motion_absolute cursor) cursor_motion_absolute
-    (server_cursor_motion_absolute st);
-  Wl.Signal.add (Cursor.signal_button cursor) cursor_button
-    (server_cursor_button st);
-  Wl.Signal.add (Cursor.signal_axis cursor) cursor_axis
-    (server_cursor_axis st);
-  Wl.Signal.add (Cursor.signal_frame cursor) cursor_frame
-    (server_cursor_frame st);
+      Cursor.(
+        add (signal_motion cursor) cursor_motion
+          (server_cursor_motion st);
+        add (signal_motion_absolute cursor) cursor_motion_absolute
+          (server_cursor_motion_absolute st);
+        add (signal_button cursor) cursor_button
+          (server_cursor_button st);
+        add (signal_axis cursor) cursor_axis
+          (server_cursor_axis st);
+        add (signal_frame cursor) cursor_frame
+          (server_cursor_frame st)
+      );
 
-  Wl.Signal.add (Backend.signal_new_input backend) new_input
-    (server_new_input st);
-  Wl.Signal.add (Seat.signal_request_set_cursor seat) request_cursor
-    (server_request_cursor st);
+      add (Backend.signal_new_input backend) new_input
+        (server_new_input st);
+      add (Seat.signal_request_set_cursor seat) request_cursor
+        (server_request_cursor st)
+    )
+  );
 
   let socket = match Wl.Display.add_socket_auto display with
     | None -> Backend.destroy backend; exit 1
     | Some socket -> socket
   in
 
-  if not (Backend.start backend) then (
-    Backend.destroy backend;
+  Backend.(if not (start backend) then (
+    destroy backend;
     Wl.Display.destroy display;
     exit 1
-  );
+  ));
 
   Unix.putenv "WAYLAND_DISPLAY" socket;
   begin match startup_cmd with
@@ -526,9 +533,9 @@ let () =
   end;
 
   Printf.printf "Running wayland compositor on WAYLAND_DISPLAY=%s" socket;
-  Wl.Display.run display;
 
-  Wl.Display.destroy_clients display;
-  Wl.Display.destroy display;
-
-  ()
+  Wl.Display.(
+    run display;
+    destroy_clients display;
+    destroy display
+  )
