@@ -137,6 +137,9 @@ struct
   let wlr_output_effective_resolution = foreign "wlr_output_effective_resolution"
       (wlr_output_p @-> ptr int @-> ptr int @-> returning void)
 
+  let wlr_output_transform_invert = foreign "wlr_output_transform_invert"
+      (wl_output_transform @-> returning wl_output_transform)
+
   (* wlr_output_layout *)
 
   let wlr_output_layout_p = ptr Output_layout.t
