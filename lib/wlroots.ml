@@ -13,7 +13,6 @@ module Backend = Backend
 module Output = Output
 module Input_device = Input_device
 module Keyboard = Keyboard
-module Keyboard_modifiers = Keyboard_modifiers
 module Keycodes = Keycodes
 module Pointer = Pointer
 module Event_pointer_motion = Event_pointer_motion

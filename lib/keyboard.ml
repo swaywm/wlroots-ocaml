@@ -45,3 +45,14 @@ module Events = struct
       typ = ptr Types.Keyboard.t;
   }
 end
+
+module Modifiers = struct
+  type t = Types.Keyboard_modifiers.t ptr
+  include Ptr
+
+  let has_alt modifiers =
+    Signed.Int64.of_int 0 !=
+      Signed.Int64.logand
+         (Unsigned.UInt32.to_int64 modifiers)
+         Types.Keyboard_modifier._WLR_MODIFIER_ALT
+end

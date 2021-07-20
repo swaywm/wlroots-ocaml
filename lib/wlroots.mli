@@ -123,11 +123,6 @@ module Keycodes : sig
   include Comparable0
 end
 
-module Keyboard_modifiers : sig
-  include Comparable0
-  val has_alt : Unsigned.uint32 -> bool
-end
-
 module Keyboard : sig
   include Comparable0
 
@@ -143,7 +138,7 @@ module Keyboard : sig
   end
 
   val xkb_state : t -> Xkbcommon.State.t
-  val modifiers : t -> Keyboard_modifiers.t
+  val modifiers : t -> Keyboard.Modifiers.t
   val keycodes : t -> Keycodes.t
   val num_keycodes : t -> Unsigned.size_t
   val set_keymap : t -> Xkbcommon.Keymap.t -> bool
@@ -153,6 +148,11 @@ module Keyboard : sig
   module Events : sig
     val key : t -> Event_key.t Wl.Signal.t
     val modifiers : t -> t Wl.Signal.t
+  end
+
+  module Modifiers : sig
+    include Comparable0
+    val has_alt : Unsigned.uint32 -> bool
   end
 end
 
@@ -397,9 +397,9 @@ module Seat : sig
     t -> Pointer_request_set_cursor_event.t Wl.Signal.t
   val set_capabilities : t -> Wl.Seat_capability.t -> unit
   val set_keyboard : t -> Input_device.t -> unit
-  val keyboard_notify_modifiers : t -> Keyboard_modifiers.t -> unit
+  val keyboard_notify_modifiers : t -> Keyboard.Modifiers.t -> unit
   val keyboard_notify_enter :
-    t -> Surface.t -> Keycodes.t -> Unsigned.size_t -> Keyboard_modifiers.t -> unit
+    t -> Surface.t -> Keycodes.t -> Unsigned.size_t -> Keyboard.Modifiers.t -> unit
   val keyboard_notify_key :
     t -> Keyboard.Event_key.t -> unit
   val pointer_notify_enter :

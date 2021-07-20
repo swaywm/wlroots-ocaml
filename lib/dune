@@ -32,7 +32,6 @@
            tablet_tool
            tablet_pad
            input_device
-           keyboard_modifiers
            keycodes
            backend
            renderer
