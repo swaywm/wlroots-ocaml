@@ -108,10 +108,6 @@ struct
 
   let wl_resource_p = ptr Wl_resource.t
 
-  (* wl_output_transform *)
-
-  let wl_output_transform = Wl_output_transform.t
-
   (* wlr_output_mode *)
 
   let wlr_output_mode_p = ptr Output_mode.t
@@ -142,7 +138,7 @@ struct
       (wlr_output_p @-> ptr int @-> ptr int @-> returning void)
 
   let wlr_output_transform_invert = foreign "wlr_output_transform_invert"
-      (wl_output_transform @-> returning wl_output_transform)
+      (Wl_output_transform.t @-> returning Wl_output_transform.t)
 
   let wlr_output_render_software_cursors = foreign "wlr_output_render_software_cursors"
       (wlr_output_p @-> pixman_region32_t @-> returning void)
