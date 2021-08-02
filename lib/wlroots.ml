@@ -1,4 +1,5 @@
 include Event
+open Wlroots_common
 
 module Output_layout = Output_layout
 module Seat = Seat
@@ -19,7 +20,11 @@ module Event_pointer_motion = Event_pointer_motion
 module Event_pointer_motion_absolute = Event_pointer_motion_absolute
 module Event_pointer_button = Event_pointer_button
 module Event_pointer_axis = Event_pointer_axis
-module Edges = Edges
+module Edges_elems = Edges_elems
+module Edges = struct
+  include Bitwise.Make(Edges_elems)
+  include Utils.Poly
+end
 module Touch = Touch
 module Tablet_tool = Tablet_tool
 module Tablet_pad = Tablet_pad

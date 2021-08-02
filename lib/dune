@@ -27,7 +27,7 @@
            event_pointer_motion
            event_pointer_motion_absolute
            event_pointer_axis
-           edges
+           edges_elems
            touch
            tablet_tool
            tablet_pad

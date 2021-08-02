@@ -13,41 +13,6 @@ let ptr_hash : 'a ptr -> int = fun p ->
   to_voidp p |> raw_address_of_ptr |> Hashtbl.hash
 
 let mk_equal compare x y = compare x y = 0
-
-let bitwise_enum desc =
-  let open Unsigned.UInt64 in
-  let open Infix in
-  let read i =
-    List.filter_map (fun (x, cst) ->
-      if (i land cst) <> zero then
-        Some x
-      else None
-    ) desc
-  in
-  let write items =
-    List.fold_left (fun i item ->
-      (List.assoc item desc) lor i
-    ) zero items
-  in
-  view ~read ~write uint64_t
-
-let bitwise_enum32 desc =
-  let open Unsigned.UInt32 in
-  let open Infix in
-  let read i =
-    List.filter_map (fun (x, cst) ->
-      if (i land cst) <> zero then
-        Some x
-      else None
-    ) desc
-  in
-  let write items =
-    List.fold_left (fun i item ->
-      (List.assoc item desc) lor i
-    ) zero items
-  in
-  view ~read ~write uint32_t
-
 module Ptr = struct
   let compare = ptr_compare
   let hash = ptr_hash

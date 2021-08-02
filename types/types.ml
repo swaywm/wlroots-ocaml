@@ -69,11 +69,11 @@ module Make (S : Cstubs_structs.TYPE) = struct
   end
 
   module Wl_seat_capability = struct
-    type t = Unsigned.uint64
-    let t : t typ = uint64_t
-    let _WL_SEAT_CAPABILITY_POINTER = constant "WL_SEAT_CAPABILITY_POINTER" uint64_t
-    let _WL_SEAT_CAPABILITY_KEYBOARD = constant "WL_SEAT_CAPABILITY_KEYBOARD" uint64_t
-    let _WL_SEAT_CAPABILITY_TOUCH = constant "WL_SEAT_CAPABILITY_TOUCH" uint64_t
+    type t = Signed.Int64.t
+    let t : t typ = int64_t
+    let _WL_SEAT_CAPABILITY_POINTER = constant "WL_SEAT_CAPABILITY_POINTER" t
+    let _WL_SEAT_CAPABILITY_KEYBOARD = constant "WL_SEAT_CAPABILITY_KEYBOARD" t
+    let _WL_SEAT_CAPABILITY_TOUCH = constant "WL_SEAT_CAPABILITY_TOUCH" t
   end
 
   module Renderer = struct
@@ -191,28 +191,17 @@ module Make (S : Cstubs_structs.TYPE) = struct
   end
 
   module Keyboard_modifier = struct
-    type modifier =
-      Shift | Caps | Ctrl | Alt | Mod2 | Mod3 | Logo | Mod5
+    type t = Unsigned.uint32
+    let t : t typ = uint32_t
 
-    let _WLR_MODIFIER_SHIFT = constant "WLR_MODIFIER_SHIFT" int64_t
-    let _WLR_MODIFIER_CAPS = constant "WLR_MODIFIER_CAPS" int64_t
-    let _WLR_MODIFIER_CTRL = constant "WLR_MODIFIER_CTRL" int64_t
-    let _WLR_MODIFIER_ALT = constant "WLR_MODIFIER_ALT" int64_t
-    let _WLR_MODIFIER_MOD2 = constant "WLR_MODIFIER_MOD2" int64_t
-    let _WLR_MODIFIER_MOD3 = constant "WLR_MODIFIER_MOD3" int64_t
-    let _WLR_MODIFIER_LOGO = constant "WLR_MODIFIER_LOGO" int64_t
-    let _WLR_MODIFIER_MOD5 = constant "WLR_MODIFIER_MOD5" int64_t
-
-    let modifier : modifier typ =
-      enum "wlr_keyboard_modifier" [
-        Shift, _WLR_MODIFIER_SHIFT;
-        Ctrl, _WLR_MODIFIER_CTRL;
-        Alt, _WLR_MODIFIER_ALT;
-        Mod2, _WLR_MODIFIER_MOD2;
-        Mod3, _WLR_MODIFIER_MOD3;
-        Logo, _WLR_MODIFIER_LOGO;
-        Mod5, _WLR_MODIFIER_MOD5;
-      ]
+    let _WLR_MODIFIER_SHIFT = constant "WLR_MODIFIER_SHIFT" t
+    let _WLR_MODIFIER_CAPS = constant "WLR_MODIFIER_CAPS" t
+    let _WLR_MODIFIER_CTRL = constant "WLR_MODIFIER_CTRL" t
+    let _WLR_MODIFIER_ALT = constant "WLR_MODIFIER_ALT" t
+    let _WLR_MODIFIER_MOD2 = constant "WLR_MODIFIER_MOD2" t
+    let _WLR_MODIFIER_MOD3 = constant "WLR_MODIFIER_MOD3" t
+    let _WLR_MODIFIER_LOGO = constant "WLR_MODIFIER_LOGO" t
+    let _WLR_MODIFIER_MOD5 = constant "WLR_MODIFIER_MOD5" t
   end
 
   module Keyboard_modifiers = struct

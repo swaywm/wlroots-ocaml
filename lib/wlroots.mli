@@ -1,4 +1,5 @@
 open Wlroots_common.Sigs
+open Wlroots_common
 
 module Wl : sig
   module Event_loop : sig
@@ -37,8 +38,8 @@ module Wl : sig
   end
 
   module Seat_capability : sig
-    type cap = Pointer | Keyboard | Touch
-    include Comparable0 with type t = cap list
+    include Bitwise.Enum
+    include Comparable0 with type t := t
   end
 end
 
@@ -164,9 +165,11 @@ module Pointer : sig
   type axis_orientation = Vertical | Horizontal
 end
 
+module Edges_elems : Bitwise.Elems
+
 module Edges : sig
-  type edges = None | Top | Bottom | Left | Right
-  include Comparable0 with type t = edges list
+  include Bitwise.Enum
+  include Comparable0 with type t := t
 end
 
 module Touch : sig
@@ -331,7 +334,7 @@ and Xdg_shell : sig
   val signal_new_surface : t -> Xdg_surface.t Wl.Signal.t
 end
 
-module Cursor : sig
+and Cursor : sig
   include Comparable0
 
   val x : t -> float
@@ -351,15 +354,7 @@ module Cursor : sig
   val warp_absolute : t -> Input_device.t -> float -> float -> unit
 end
 
-module Xcursor_manager : sig
-  include Comparable0
-
-  val create : string option -> int -> t
-  val load : t -> float -> int
-  val set_cursor_image : t -> string -> Cursor.t -> unit
-end
-
-module Seat : sig
+and Seat : sig
   include Comparable0
 
   module Client : sig
@@ -414,6 +409,13 @@ module Seat : sig
     t -> Unsigned.uint32 -> Pointer.axis_orientation -> float -> Signed.Int32.t -> Pointer.axis_source -> unit
   val pointer_notify_frame :
     t -> unit
+end
+module Xcursor_manager : sig
+  include Comparable0
+
+  val create : string option -> int -> t
+  val load : t -> float -> int
+  val set_cursor_image : t -> string -> Cursor.t -> unit
 end
 
 module Log : sig

@@ -63,9 +63,8 @@ let signal_request_set_cursor (seat: t) : _ Wl.Signal.t = {
   typ = Pointer_request_set_cursor_event.t
 }
 
-let set_capabilities seat caps =
+let set_capabilities =
   Bindings.wlr_seat_set_capabilities
-    seat (coerce Wl.Seat_capability.t uint64_t caps)
 
 let set_keyboard =
   Bindings.wlr_seat_set_keyboard
