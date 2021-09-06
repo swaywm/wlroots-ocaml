@@ -1,3 +1,4 @@
+{ wlroots-version ? "0.12" }:
 let
   nix-rev = "3ab8ce12c2db31268f579c11727d9c63cfee2eee"; # 2021-08-15
   nix-src = builtins.fetchTarball {
@@ -7,6 +8,9 @@ let
 in import nix-src {
   overlays = [
     (_: super: { ocamlPackages = super.ocaml-ng.ocamlPackages_4_08; })
+    (_: super: {
+      wlroots_0_13 = super.callPackage (import ./wlroots-13.nix) { };
+    })
     (self: super:
       let
         opam2nix = import (super.fetchFromGitHub {
@@ -51,7 +55,16 @@ in import nix-src {
                   pkgs.pixman
                   pkgs.wayland-protocols
                   pkgs.wayland
-                  pkgs.wlroots_0_12
+                  (if wlroots-version == "0.12" then
+                    pkgs.wlroots_0_12
+                  else if wlroots-version == "0.13" then
+                    pkgs.wlroots_0_13
+                  else if wlroots-version == "0.14" then
+                    pkgs.wlroots
+                  else
+                    throw ''
+                      wlroots-version must be one of 0.12, 0.13 or 0.14.  Got ${wlroots-version}
+                    '')
                 ];
               });
           };
