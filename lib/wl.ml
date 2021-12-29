@@ -1,4 +1,5 @@
 open Ctypes
+open Wlroots_common
 open Wlroots_common.Utils
 
 module Bindings = Wlroots_ffi_f.Ffi.Make (Generated_ffi)
@@ -115,20 +116,19 @@ module Resource = struct
   include Ptr
 end
 
-module Output_transform = struct
-  type t = Types.Wl_output_transform.t
-  include Poly
-end
-
-module Seat_capability = struct
-  type cap = Pointer | Keyboard | Touch
-  type t = cap list
-  include Poly
-
-  let t : cap list typ =
-    bitwise_enum Types.Wl_seat_capability.([
+module Seat_capability_elems : Bitwise.Elems = struct
+  type t = Pointer | Keyboard | Touch
+  module Size = Signed.Int64
+  let size = int64_t
+  open Types.Wl_seat_capability
+  let desc = [
       Pointer, _WL_SEAT_CAPABILITY_POINTER;
       Keyboard, _WL_SEAT_CAPABILITY_KEYBOARD;
       Touch, _WL_SEAT_CAPABILITY_TOUCH;
-    ])
+  ]
+end
+
+module Seat_capability = struct
+  include Bitwise.Make(Seat_capability_elems)
+  include Poly
 end

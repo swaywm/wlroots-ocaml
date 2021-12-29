@@ -1,6 +1,7 @@
 (library
  (name wlroots_common)
  (public_name wlroots.common)
+ (modules utils bitwise sigs)
  (libraries ctypes))
 
 ;; xdg-shell-protocol.h
