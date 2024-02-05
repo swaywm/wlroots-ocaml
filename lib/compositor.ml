@@ -7,5 +7,5 @@ module Types = Wlroots_ffi_f.Ffi.Types
 type t = Types.Compositor.t ptr
 include Ptr
 
-let create dpy renderer =
-  Bindings.wlr_compositor_create dpy renderer
+let create dpy version renderer =
+  Bindings.wlr_compositor_create dpy version renderer

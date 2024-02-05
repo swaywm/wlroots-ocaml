@@ -197,7 +197,7 @@ module Backend : sig
   val start : t -> bool
   val destroy : t -> unit
 
-  val get_renderer : t -> Renderer.t
+  val renderer_autocreate : t -> Renderer.t
 
   val signal_new_output : t -> Output.t Wl.Signal.t
   val signal_new_input : t -> Input_device.t Wl.Signal.t
@@ -215,7 +215,7 @@ end
 module Compositor : sig
   include Comparable0
 
-  val create : Wl.Display.t -> Renderer.t -> t
+  val create : Wl.Display.t -> int -> Renderer.t -> t
 end
 
 module Xdg_shell : sig
@@ -225,7 +225,7 @@ module Xdg_shell : sig
     include Comparable0
   end
 
-  val create : Wl.Display.t -> t
+  val create : Wl.Display.t -> int -> t
   val signal_new_surface : t -> Surface.t Wl.Signal.t
 end
 

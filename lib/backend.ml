@@ -8,14 +8,15 @@ type t = Types.Backend.t ptr
 include Ptr
 
 let autocreate dpy =
-  let b = Bindings.wlr_backend_autocreate dpy None in
+  (* TODO get returned Session *)
+  let b = Bindings.wlr_backend_autocreate dpy Ctypes.(coerce (ptr void) (ptr (ptr Types.Session.t)) null) in
   if is_null b then failwith "Failed to create backend";
   b
 
 let start = Bindings.wlr_backend_start
 let destroy = Bindings.wlr_backend_destroy
 
-let get_renderer = Bindings.wlr_backend_get_renderer
+let renderer_autocreate = Bindings.wlr_renderer_autocreate
 
 let signal_new_output (backend: t) : Types.Output.t ptr Wl.Signal.t = {
   c = backend |-> Types.Backend.events_new_output;

@@ -22,15 +22,15 @@ type typ =
 let typ (input: t): typ =
   match input |->> Types.Input_device.typ with
   | Types.Input_device.Type.Keyboard ->
-    Keyboard (input |->> Types.Input_device.keyboard)
+    Keyboard (Keyboard.from_input_device input)
   | Types.Input_device.Type.Pointer ->
-    Pointer (input |->> Types.Input_device.pointer)
+    Pointer (Pointer.from_input_device input)
   | Types.Input_device.Type.Touch ->
-    Touch (input |->> Types.Input_device.touch)
+    Touch (Touch.from_input_device input)
   | Types.Input_device.Type.Tablet_tool ->
-    Tablet (input |->> Types.Input_device.tablet)
+    Tablet (Tablet_tool.from_input_device input)
   | Types.Input_device.Type.Tablet_pad ->
-    Tablet_pad (input |->> Types.Input_device.tablet_pad)
+    Tablet_pad (Tablet_pad.from_input_device input)
 
 let vendor (input: t): int =
   input |->> Types.Input_device.vendor

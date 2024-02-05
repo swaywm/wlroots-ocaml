@@ -6,3 +6,5 @@ module Types = Wlroots_ffi_f.Ffi.Types
 
 type t = Types.Touch.t ptr
 include Ptr
+
+let from_input_device = Bindings.wlr_touch_from_input_device

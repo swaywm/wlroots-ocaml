@@ -23,7 +23,7 @@ type tinywl_server = {
 }
 
 let output_frame _st _ _ =
-  failwith "todo"
+  failwith "todo output_frame"
 
 let server_new_output st _ output =
   let output_ok =
@@ -44,25 +44,25 @@ let server_new_output st _ output =
   end
 
 let server_new_xdg_surface _st _ _ =
-  failwith "todo"
+  failwith "todo server_new_xdg_surface"
 
 let server_cursor_motion _st _ _ =
-  failwith "todo"
+  failwith "todo server_cursor_motion"
 
 let server_cursor_motion_absolute _st _ _ =
-  failwith "todo"
+  failwith "todo server_cursor_motion_absolute"
 
 let server_cursor_button _st _ _ =
-  failwith "todo"
+  failwith "todo server_cursor_button"
 
 let server_cursor_axis _st _ _ =
-  failwith "todo"
+  failwith "todo server_cursor_axis"
 
 let server_cursor_frame _st _ _ =
-  failwith "todo"
+  failwith "todo server_cursor_frame"
 
 let server_new_keyboard _st (_keyboard: Keyboard.t) =
-  failwith "todo"
+  failwith "todo server_new_keyboard"
 
 let server_new_pointer st (pointer: Input_device.t) =
   Cursor.attach_input_device st.cursor pointer

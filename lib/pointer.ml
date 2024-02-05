@@ -30,3 +30,5 @@ module Event_axis = struct
   let t = ptr Types.Event_pointer_axis.t
   include Ptr
 end
+
+let from_input_device = Bindings.wlr_pointer_from_input_device
