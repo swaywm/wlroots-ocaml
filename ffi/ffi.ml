@@ -185,6 +185,10 @@ struct
   let wlr_renderer_init_wl_display = foreign "wlr_renderer_init_wl_display"
       (wlr_renderer_p @-> wl_display_p @-> returning bool)
 
+  (* wlr_input_device *)
+
+  let wlr_input_device_p = ptr Input_device.t
+
   (* wlr_keyboard *)
 
   let wlr_keyboard_p = ptr Keyboard.t
@@ -192,15 +196,46 @@ struct
   let wlr_keyboard_set_keymap = foreign "wlr_keyboard_set_keymap"
       (wlr_keyboard_p @-> Xkbcommon.Keymap.t @-> returning bool)
 
+  let wlr_keyboard_from_input_device = foreign "wlr_keyboard_from_input_device"
+      (wlr_input_device_p @-> returning wlr_keyboard_p)
+
+  (* wlr_pointer *)
+
+  let wlr_pointer_p = ptr Pointer.t
+
+  let wlr_pointer_from_input_device = foreign "wlr_pointer_from_input_device"
+      (wlr_input_device_p @-> returning wlr_pointer_p)
+
+  (* wlr_touch *)
+
+  let wlr_touch_p = ptr Touch.t
+
+  let wlr_touch_from_input_device = foreign "wlr_touch_from_input_device"
+      (wlr_input_device_p @-> returning wlr_touch_p)
+
+  (* wlr_tablet *)
+
+  let wlr_tablet_p = ptr Tablet.t
+
+  let wlr_tablet_from_input_device = foreign "wlr_tablet_from_input_device"
+      (wlr_input_device_p @-> returning wlr_tablet_p)
+
+  (* wlr_tablet_pad *)
+
+  let wlr_tablet_pad_p = ptr Tablet_pad.t
+
+  let wlr_tablet_pad_from_input_device = foreign "wlr_tablet_pad_from_input_device"
+      (wlr_input_device_p @-> returning wlr_tablet_pad_p)
+
   (* wlr_backend *)
 
   let wlr_backend_p = ptr Backend.t
 
-  let wlr_backend_get_renderer = foreign "wlr_backend_get_renderer"
+  let wlr_renderer_autocreate = foreign "wlr_renderer_autocreate"
       (wlr_backend_p @-> returning wlr_renderer_p)
 
   let wlr_backend_autocreate = foreign "wlr_backend_autocreate"
-      (wl_display_p @-> Backend.renderer_create_func_t @-> returning wlr_backend_p)
+      (wl_display_p @-> ptr (ptr Session.t) @-> returning wlr_backend_p)
 
   let wlr_backend_start = foreign "wlr_backend_start"
       (wlr_backend_p @-> returning bool)
@@ -220,18 +255,14 @@ struct
   let wlr_compositor_p = ptr Compositor.t
 
   let wlr_compositor_create = foreign "wlr_compositor_create"
-      (wl_display_p @-> wlr_renderer_p @-> returning wlr_compositor_p)
+      (wl_display_p @-> int @-> wlr_renderer_p @-> returning wlr_compositor_p)
 
   (* wlr_xdg_shell *)
 
   let wlr_xdg_shell_p = ptr Xdg_shell.t
 
   let wlr_xdg_shell_create = foreign "wlr_xdg_shell_create"
-      (wl_display_p @-> returning wlr_xdg_shell_p)
-
-  (* wlr_input_device *)
-
-  let wlr_input_device_p = ptr Input_device.t
+      (wl_display_p @-> int @-> returning wlr_xdg_shell_p)
 
   (* wlr_cursor *)
 

@@ -6,3 +6,5 @@ module Types = Wlroots_ffi_f.Ffi.Types
 
 type t = Types.Tablet.t ptr
 include Ptr
+
+let from_input_device = Bindings.wlr_tablet_from_input_device

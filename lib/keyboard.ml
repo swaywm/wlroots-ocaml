@@ -27,3 +27,5 @@ let signal_key (keyboard : t) : Event_key.t Wl.Signal.t = {
 }
 
 let set_keymap = Bindings.wlr_keyboard_set_keymap
+
+let from_input_device = Bindings.wlr_keyboard_from_input_device
