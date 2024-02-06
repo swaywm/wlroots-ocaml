@@ -33,3 +33,26 @@ opam install -t --deps-only .
 
 Then, you can use `make` to build the library, and `make examples` to build the
 example programs.
+
+### Development using nix
+
+wlroots-ocaml can be compiled with nix:
+
+    $ nix-build
+
+To specify the version of wlroots - supported version are 0.12, 0.13 and 0.14:
+
+    $ nix-build --argstr wlroots-version 0.14
+
+Open a nix shell with the program dependencies managed by nix:
+
+    $ nix-shell
+    $ make
+
+The wlroots version can be specified for the nix shell, too:
+
+    $ nix-shell --argstr wlroots-version 0.14
+
+To update the opam dependencies used by the nix system:
+
+    $ nix-shell opam2nix-shell.nix

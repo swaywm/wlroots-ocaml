@@ -13,7 +13,10 @@ depends: [
   "mtime"
   "base" { build }
   "stdio" { build }
-  "tgls" { with-test }
+  # Should have { with-test }.
+  # Can't because of opam2nix.
+  # https://github.com/timbertson/opam2nix/issues/36
+  "tgls"
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs "@install"]
